@@ -1,6 +1,6 @@
 # Details! - Skin 'The War Within'
 
-World of Warcraft Addon that adds the **'The War Within'** Skin to **Details!**.
+World of Warcraft Addon that adds the **'The War Within'** Skin (inspired by **/u/Sm0keO**) to **Details!**.
 
 View on Curseforge: https://www.curseforge.com/wow/addons/details-skin-the-war-within
 
