@@ -1,0 +1,5 @@
+package-as: Details_TWW
+
+ignore:
+- Screenshots
+- "*.png"
