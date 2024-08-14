@@ -2,8 +2,6 @@ local TWW = LibStub('AceAddon-3.0'):NewAddon('Details_TWW', 'AceConsole-3.0')
 local LocDetails = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 local LSM = LibStub('LibSharedMedia-3.0')
 
-local db
-
 local debugMode = true
 local skinName = '|cff8080ffThe War Within|r'
 
@@ -22,7 +20,8 @@ function TWW:OnEnable()
         return
     end
 
-    self:Init()
+    self:RegisterTextures()
+    self:RegisterSkin()
 end
 
 function TWW:OnDisable()
@@ -34,30 +33,12 @@ function TWW:Debug(str, ...)
     self:Print(str, ...)
 end
 
-function TWW:Init()
-    local current = Details:GetCurrentProfileName()
-    TWW:Debug('current', current)
-
-    TWW:RegisterTextures()
-    TWW:RegisterSkin()
-
-    C_Timer.After(3, function()
-        --
-        -- print('TIMER!')     
-    end)
-end
-
 function TWW:RegisterTextures()
     TWW:Debug('TWW:RegisterTextures()')
-    local test = LSM:List('statusbar')
-    -- DevTools_Dump(test)
-    TWW:Debug('List Statusbar', #LSM:List('statusbar'))
 
     LSM:Register('statusbar', 'TheWarWithinHeader', [[Interface\AddOns\Details_TWW\Textures\header.tga]])
     LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.tga]])
     LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.tga]])
-
-    TWW:Debug('List Statusbar', #LSM:List('statusbar'))
 end
 
 local skinTable = {
