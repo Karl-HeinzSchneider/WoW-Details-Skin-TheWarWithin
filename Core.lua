@@ -5,7 +5,9 @@ local LSM = LibStub('LibSharedMedia-3.0')
 local skinName = '|cff8080ffThe War Within|r'
 
 local name, realm = UnitName('player')
-local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo')
+local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Botlike')
+
+local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -24,6 +26,8 @@ function TWW:OnEnable()
 
     self:RegisterTextures()
     self:RegisterSkin()
+
+    if retail then self:ChangeAugmentationBar() end
 end
 
 function TWW:OnDisable()
@@ -46,7 +50,7 @@ end
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
     author = "Karl-Heinz Schneider",
-    version = "1.0",
+    version = "1.1",
     site = "https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin",
     desc = "The War Within Skin.\n\n ...",
     no_cache = true,
@@ -308,4 +312,25 @@ local skinTable = {
 function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
     Details:InstallSkin(skinName, skinTable)
+end
+
+function TWW:ChangeAugmentationBar()
+    TWW:Debug('TWW:ChangeAugmentationBar()')
+
+    local evokerColor = Details.class_colors["EVOKER"]
+
+    hooksecurefunc(Details, 'ShowExtraStatusbar',
+                   function(thisLine, amount, extraAmount, totalAmount, topAmount, instanceObject, onEnterFunc,
+                            onLeaveFunc)
+        TWW:Debug('ShowExtraStatusbar')
+        local extraStatusbar = thisLine.extraStatusbar
+
+        if extraStatusbar:IsShown() and not thisLine.TWWHooked then
+            thisLine.TWWHooked = true
+
+            extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+            extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+            -- extraStatusbar.texture:SetAlpha(0.69) -- default = 0.7
+        end
+    end)
 end
