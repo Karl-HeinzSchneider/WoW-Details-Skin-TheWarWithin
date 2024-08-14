@@ -1,0 +1,27 @@
+## Interface: 40400
+## Interface-Cata: 40400
+## Interface-Wrath: 30403
+## Interface-Classic: 11503
+## Title: Details! Skin TWW |cff8080ff@project-version@|r
+## Notes: Brings the modern retail UI to classic.|n|cffbbbbbbBy Karl-Heinz Schneider|r|n|n|TInterface/Addons/DragonflightUI/Textures/Art/coffee:12:12|t |cff82c5ffbuymeacoffee.com/karlheinzschneider|r
+## Author: Karl-Heinz Schneider
+## X-Website: 
+## X-Curse-Project-ID: 
+## Version: @project-version@
+## X-Date: @project-date-integer@
+## SavedVariables: DragonflightUIDB
+## Dependencies: Details
+## OptionalDeps: Ace3
+
+# Libs
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Libs\AceConsole-3.0\AceConsole-3.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\LibSharedMedia-3.0\lib.xml
+
+Core.lua
