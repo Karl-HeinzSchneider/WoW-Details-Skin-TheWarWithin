@@ -53,7 +53,9 @@ function TWW:RegisterTextures()
     -- DevTools_Dump(test)
     TWW:Debug('List Statusbar', #LSM:List('statusbar'))
 
-    LSM:Register('statusbar', 'TheWarWithin', [[Interface\AddOns\Details_TWW\Textures\header.tga]])
+    LSM:Register('statusbar', 'TheWarWithinHeader', [[Interface\AddOns\Details_TWW\Textures\header.tga]])
+    LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.tga]])
+    LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.tga]])
 
     TWW:Debug('List Statusbar', #LSM:List('statusbar'))
 end
@@ -91,7 +93,7 @@ local skinTable = {
         -- titlebar
         titlebar_shown = true,
         titlebar_height = 32,
-        titlebar_texture = "TheWarWithin",
+        titlebar_texture = "TheWarWithinHeader",
         titlebar_texture_color = {1.0, 1.0, 1.0, 1.0},
         --
         ["toolbar_icon_file"] = "Interface\\AddOns\\Details\\images\\toolbar_icons_shadow",
@@ -121,6 +123,82 @@ local skinTable = {
             },
             ["enable_custom_text"] = false,
             ["show_timer"] = true
+        },
+        --
+        ["row_info"] = {
+            ["textR_outline"] = false,
+            ["spec_file"] = "Interface\\AddOns\\Details\\images\\spec_icons_normal",
+            ["textL_outline"] = false,
+            ["texture_highlight"] = "Interface\\FriendsFrame\\UI-FriendsList-Highlight",
+            ["textR_show_data"] = {
+                true, -- [1]
+                true, -- [2]
+                true -- [3]
+            },
+            ["textL_enable_custom_text"] = false,
+            ["fixed_text_color"] = {
+                1, -- [1]
+                1, -- [2]
+                1 -- [3]
+            },
+            ["height"] = 28, --
+            ["space"] = {["right"] = 0, ["left"] = 0, ["between"] = 4}, --
+            row_offsets = {left = 29, right = -29, top = 0, bottom = 0}, --
+            ["texture_background_class_color"] = false,
+            ["start_after_icon"] = false, --
+            ["font_face_file"] = "Interface\\Addons\\Details\\fonts\\Accidental Presidency.ttf",
+            ["backdrop"] = {
+                ["enabled"] = false,
+                ["size"] = 12,
+                ["color"] = {
+                    1, -- [1]
+                    1, -- [2]
+                    1, -- [3]
+                    1 -- [4]
+                },
+                ["texture"] = "Details BarBorder 2"
+            },
+            ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small", --
+            start_after_icon = false, --
+            icon_offset = {-29, 0}, --
+            ["textR_bracket"] = "(",
+            ["textR_enable_custom_text"] = false,
+            ["fixed_texture_color"] = {
+                0, -- [1]
+                0, -- [2]
+                0 -- [3]
+            },
+            ["textL_show_number"] = true,
+            ["textL_custom_text"] = "{data1}. {data3}{data2}",
+            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
+            ["models"] = {
+                ["upper_model"] = "Spells\\AcidBreath_SuperGreen.M2",
+                ["lower_model"] = "World\\EXPANSION02\\DOODADS\\Coldarra\\COLDARRALOCUS.m2",
+                ["upper_alpha"] = 0.5,
+                ["lower_enabled"] = false,
+                ["lower_alpha"] = 0.1,
+                ["upper_enabled"] = false
+            },
+            ["texture_custom_file"] = "Interface\\",
+            ["textR_class_colors"] = false,
+            ["texture_custom"] = "",
+            ["textL_class_colors"] = false,
+            ["alpha"] = 1,
+            ["no_icon"] = false,
+            ["texture"] = "TheWarWithinBar",
+            ["texture_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\bar",
+            ["texture_background"] = "TheWarWithinBackground", --
+            ["texture_background_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\background", --
+            ["fixed_texture_background_color"] = {1, 1, 1, 1}, --
+            ["font_face"] = "Friz Quadrata TT", --
+            ["font_size"] = 11, --
+            ["textL_offset"] = 0, --
+            ["text_yoffset"] = 7, --
+            ["texture_class_colors"] = true,
+            ["percent_type"] = 1,
+            ["fast_ps_update"] = false,
+            ["textR_separator"] = ",",
+            ["use_spec_icons"] = true
         },
         --
         menu_icons_alpha = 0.92,
@@ -175,81 +253,6 @@ local skinTable = {
         ["instance_button_anchor"] = {
             -27, -- [1]
             1 -- [2]
-        },
-        ["row_info"] = {
-            ["textR_outline"] = false,
-            ["spec_file"] = "Interface\\AddOns\\Details\\images\\spec_icons_normal",
-            ["textL_outline"] = false,
-            ["texture_highlight"] = "Interface\\FriendsFrame\\UI-FriendsList-Highlight",
-            ["textR_show_data"] = {
-                true, -- [1]
-                true, -- [2]
-                true -- [3]
-            },
-            ["textL_enable_custom_text"] = false,
-            ["fixed_text_color"] = {
-                1, -- [1]
-                1, -- [2]
-                1 -- [3]
-            },
-            ["space"] = {["right"] = 0, ["left"] = 0, ["between"] = 0},
-            ["texture_background_class_color"] = false,
-            ["start_after_icon"] = true,
-            ["font_face_file"] = "Interface\\Addons\\Details\\fonts\\Accidental Presidency.ttf",
-            ["backdrop"] = {
-                ["enabled"] = false,
-                ["size"] = 12,
-                ["color"] = {
-                    1, -- [1]
-                    1, -- [2]
-                    1, -- [3]
-                    1 -- [4]
-                },
-                ["texture"] = "Details BarBorder 2"
-            },
-            ["font_size"] = 16,
-            ["height"] = 21,
-            ["texture_file"] = "Interface\\RaidFrame\\Raid-Bar-Hp-Fill",
-            ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small",
-            ["textR_bracket"] = "(",
-            ["textR_enable_custom_text"] = false,
-            ["fixed_texture_color"] = {
-                0, -- [1]
-                0, -- [2]
-                0 -- [3]
-            },
-            ["textL_show_number"] = true,
-            ["textL_custom_text"] = "{data1}. {data3}{data2}",
-            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
-            ["fixed_texture_background_color"] = {
-                0, -- [1]
-                0, -- [2]
-                0, -- [3]
-                0.150228589773178 -- [4]
-            },
-            ["models"] = {
-                ["upper_model"] = "Spells\\AcidBreath_SuperGreen.M2",
-                ["lower_model"] = "World\\EXPANSION02\\DOODADS\\Coldarra\\COLDARRALOCUS.m2",
-                ["upper_alpha"] = 0.5,
-                ["lower_enabled"] = false,
-                ["lower_alpha"] = 0.1,
-                ["upper_enabled"] = false
-            },
-            ["texture_custom_file"] = "Interface\\",
-            ["textR_class_colors"] = false,
-            ["texture_custom"] = "",
-            ["texture"] = "Blizzard Raid Bar",
-            ["textL_class_colors"] = false,
-            ["alpha"] = 1,
-            ["no_icon"] = false,
-            ["texture_background"] = "Details D'ictum (reverse)",
-            ["texture_background_file"] = "Interface\\AddOns\\Details\\images\\bar4_reverse",
-            ["font_face"] = "Accidental Presidency",
-            ["texture_class_colors"] = true,
-            ["percent_type"] = 1,
-            ["fast_ps_update"] = false,
-            ["textR_separator"] = ",",
-            ["use_spec_icons"] = true
         },
         ["plugins_grow_direction"] = 1,
         ["menu_alpha"] = {
