@@ -6,9 +6,9 @@ View on Curseforge: https://www.curseforge.com/wow/addons/details-skin-the-war-w
 
 ## Features
 
-Open the _Details!_ options ('/details options'), and apply the Skin under **Options > Skins > Skin > 'The War Within'**.
-
 ## How to use
+
+Open the _Details!_ options ('/details options'), and apply the Skin under **Options > Skins > Skin > 'The War Within'**.
 
 ## Support
 
