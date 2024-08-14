@@ -2,8 +2,10 @@ local TWW = LibStub('AceAddon-3.0'):NewAddon('Details_TWW', 'AceConsole-3.0')
 local LocDetails = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 local LSM = LibStub('LibSharedMedia-3.0')
 
-local debugMode = true
 local skinName = '|cff8080ffThe War Within|r'
+
+local name, realm = UnitName('player')
+local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo')
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -123,7 +125,7 @@ local skinTable = {
             },
             ["height"] = 28, --
             ["space"] = {["right"] = 0, ["left"] = 0, ["between"] = 4}, --
-            row_offsets = {left = 29, right = -29, top = 0, bottom = 0}, --
+            row_offsets = {left = 29, right = -29 - 8, top = 0, bottom = 0}, --
             ["texture_background_class_color"] = false,
             ["start_after_icon"] = false, --
             ["font_face_file"] = "Interface\\Addons\\Details\\fonts\\Accidental Presidency.ttf",
