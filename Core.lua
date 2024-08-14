@@ -309,4 +309,3 @@ function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
     Details:InstallSkin(skinName, skinTable)
 end
-
