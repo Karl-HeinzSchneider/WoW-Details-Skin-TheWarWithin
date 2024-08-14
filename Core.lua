@@ -127,7 +127,6 @@ local skinTable = {
         --
         ["row_info"] = {
             ["textR_outline"] = false,
-            ["spec_file"] = "Interface\\AddOns\\Details\\images\\spec_icons_normal",
             ["textL_outline"] = false,
             ["texture_highlight"] = "Interface\\FriendsFrame\\UI-FriendsList-Highlight",
             ["textR_show_data"] = {
@@ -158,9 +157,9 @@ local skinTable = {
                 },
                 ["texture"] = "Details BarBorder 2"
             },
-            ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small", --
+            ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small",
             start_after_icon = false, --
-            icon_offset = {-29, 0}, --
+            icon_offset = {-30, 0}, --
             ["textR_bracket"] = "(",
             ["textR_enable_custom_text"] = false,
             ["fixed_texture_color"] = {
@@ -188,7 +187,8 @@ local skinTable = {
             ["texture"] = "TheWarWithinBar",
             ["texture_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\bar",
             ["texture_background"] = "TheWarWithinBackground", --
-            ["texture_background_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\background", --
+            ["texture_background_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\background", --        
+
             ["fixed_texture_background_color"] = {1, 1, 1, 1}, --
             ["font_face"] = "Friz Quadrata TT", --
             ["font_size"] = 11, --
@@ -198,7 +198,8 @@ local skinTable = {
             ["percent_type"] = 1,
             ["fast_ps_update"] = false,
             ["textR_separator"] = ",",
-            ["use_spec_icons"] = true
+            ["use_spec_icons"] = true, --
+            ["spec_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\specs" --
         },
         --
         menu_icons_alpha = 0.92,
