@@ -50,7 +50,7 @@ end
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
     author = "Karl-Heinz Schneider",
-    version = "1.0",
+    version = "1.1",
     site = "https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin",
     desc = "The War Within Skin.\n\n ...",
     no_cache = true,
