@@ -10,8 +10,6 @@ local skinName = '|cff8080ffThe War Within|r'
 function TWW:OnInitialize()
     -- Called when the addon is loaded
     TWW:Debug('TWW:OnInitialize()')
-    self.db = LibStub('AceDB-3.0'):New('DragonflightUIDB', defaults, true)
-    db = self.db.profile
 end
 
 function TWW:OnEnable()
