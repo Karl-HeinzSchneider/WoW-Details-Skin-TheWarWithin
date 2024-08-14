@@ -182,7 +182,8 @@ local skinTable = {
             ["fast_ps_update"] = false,
             ["textR_separator"] = ",",
             ["use_spec_icons"] = true, --
-            ["spec_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\specs" --
+            ["spec_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\specs", --
+            icon_size_offset = 1.2
         },
         --
         menu_icons_alpha = 0.92,
