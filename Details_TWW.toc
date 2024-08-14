@@ -5,8 +5,8 @@
 ## Title: Details! Skin TWW |cff8080ff@project-version@|r
 ## Notes: Adds the 'The War Within' Skin to Details.|n|cffbbbbbbBy Karl-Heinz Schneider|r|n|n|TInterface/Addons/Details_TWW/Textures/coffee:12:12|t |cff82c5ffbuymeacoffee.com/karlheinzschneider|r
 ## Author: Karl-Heinz Schneider
-## X-Website: 
-## X-Curse-Project-ID: 
+## X-Website: https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin
+## X-Curse-Project-ID: 1083704
 ## Version: @project-version@
 ## X-Date: @project-date-integer@
 ## Dependencies: Details
