@@ -15,15 +15,6 @@ end
 function TWW:OnEnable()
     -- Called when the addon is enabled
     TWW:Debug('TWW:OnEnable()')
-
-    if not Details then
-        --
-        TWW:Debug('no Details')
-        return
-    end
-
-    self:RegisterTextures()
-    self:RegisterSkin()
 end
 
 function TWW:OnDisable()
@@ -35,6 +26,19 @@ function TWW:Debug(str, ...)
     self:Print(str, ...)
 end
 
+function TWW:OnEvent(event, arg1, ...)
+    TWW:Debug(event, arg1, ...)
+    if event == 'PLAYER_LOGIN' then
+        TWW:RegisterSkin()
+        TWW:FixTitleBar()
+    end
+end
+
+local frame = CreateFrame('FRAME')
+frame:SetScript("OnEvent", TWW.OnEvent)
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
 function TWW:RegisterTextures()
     TWW:Debug('TWW:RegisterTextures()')
 
@@ -42,6 +46,7 @@ function TWW:RegisterTextures()
     LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.tga]])
     LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.tga]])
 end
+TWW:RegisterTextures()
 
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
@@ -109,15 +114,7 @@ local skinTable = {
         },
         --
         ["row_info"] = {
-            ["textR_outline"] = false,
-            ["textL_outline"] = false,
             ["texture_highlight"] = "Interface\\FriendsFrame\\UI-FriendsList-Highlight",
-            ["textR_show_data"] = {
-                true, -- [1]
-                true, -- [2]
-                true -- [3]
-            },
-            ["textL_enable_custom_text"] = false,
             ["fixed_text_color"] = {
                 1, -- [1]
                 1, -- [2]
@@ -143,16 +140,29 @@ local skinTable = {
             ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small",
             start_after_icon = false, --
             icon_offset = {-30, 0}, --
+            --
+            ["textL_show_number"] = true, --
+            ["textL_outline"] = false,
+            ["textL_enable_custom_text"] = false, --
+            ["textL_custom_text"] = "{data1}. {data3}{data2}", --
+            ["textL_class_colors"] = false,
+            --
+            ["textR_outline"] = false, --
             ["textR_bracket"] = "(",
             ["textR_enable_custom_text"] = false,
+            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
+            ["textR_class_colors"] = false,
+            ["textR_show_data"] = {
+                true, -- [1]
+                true, -- [2]
+                true -- [3]
+            },
+            --
             ["fixed_texture_color"] = {
                 0, -- [1]
                 0, -- [2]
                 0 -- [3]
             },
-            ["textL_show_number"] = true,
-            ["textL_custom_text"] = "{data1}. {data3}{data2}",
-            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
             ["models"] = {
                 ["upper_model"] = "Spells\\AcidBreath_SuperGreen.M2",
                 ["lower_model"] = "World\\EXPANSION02\\DOODADS\\Coldarra\\COLDARRALOCUS.m2",
@@ -162,9 +172,7 @@ local skinTable = {
                 ["upper_enabled"] = false
             },
             ["texture_custom_file"] = "Interface\\",
-            ["textR_class_colors"] = false,
             ["texture_custom"] = "",
-            ["textL_class_colors"] = false,
             ["alpha"] = 1,
             ["no_icon"] = false,
             ["texture"] = "TheWarWithinBar",
@@ -307,5 +315,23 @@ local skinTable = {
 
 function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
+
+    hooksecurefunc(Details, 'ChangeSkin', function(self, skin)
+        --
+        TWW:Debug('ChangeSkin', skin)
+        TWW:Debug('self.skin', Details.skin)
+    end)
+
     Details:InstallSkin(skinName, skinTable)
+end
+
+function TWW:FixTitleBar()
+    --
+    TWW:Debug('TWW:FixTitleBar()', Details.skin)
+
+    for instanceId = 1, Details:GetNumInstances() do
+        --      
+        local instance = Details:GetInstance(instanceId)
+        if (instance and instance.baseframe and instance.ativa) then instance:ChangeSkin() end
+    end
 end
