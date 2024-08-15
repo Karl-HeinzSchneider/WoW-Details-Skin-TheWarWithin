@@ -186,7 +186,7 @@ local skinTable = {
             icon_size_offset = 1.2
         },
         --
-        menu_icons_alpha = 0.92,
+        menu_icons_alpha = 1,
         ["show_statusbar"] = false,
         ["menu_icons_size"] = 1.07,
         ["color"] = {
@@ -261,7 +261,7 @@ local skinTable = {
             true, -- [4]
             true, -- [5]
             false, -- [6]
-            ["space"] = -2,
+            ["space"] = 0,
             ["shadow"] = false
         },
         ["auto_hide_menu"] = {["left"] = false, ["right"] = false},
