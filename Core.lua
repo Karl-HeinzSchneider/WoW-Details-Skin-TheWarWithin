@@ -5,7 +5,16 @@ local LSM = LibStub('LibSharedMedia-3.0')
 local skinName = '|cff8080ffThe War Within|r'
 
 local name, realm = UnitName('player')
-local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo')
+local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Botlike')
+
+local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+
+local version = ''
+if not GetAddOnMetadata then
+    version = C_AddOns.GetAddOnMetadata('Details_TWW', 'Version')
+else
+    version = GetAddOnMetadata('Details_TWW', 'Version')
+end
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -15,15 +24,6 @@ end
 function TWW:OnEnable()
     -- Called when the addon is enabled
     TWW:Debug('TWW:OnEnable()')
-
-    if not Details then
-        --
-        TWW:Debug('no Details')
-        return
-    end
-
-    self:RegisterTextures()
-    self:RegisterSkin()
 end
 
 function TWW:OnDisable()
@@ -35,6 +35,20 @@ function TWW:Debug(str, ...)
     self:Print(str, ...)
 end
 
+function TWW:OnEvent(event, arg1, ...)
+    TWW:Debug(event, arg1, ...)
+    if event == 'PLAYER_LOGIN' then
+        TWW:RegisterSkin()
+        TWW:FixTitleBar()
+        if retail then TWW:ChangeAugmentationBar() end
+    end
+end
+
+local frame = CreateFrame('FRAME')
+frame:SetScript("OnEvent", TWW.OnEvent)
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
 function TWW:RegisterTextures()
     TWW:Debug('TWW:RegisterTextures()')
 
@@ -42,11 +56,12 @@ function TWW:RegisterTextures()
     LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.tga]])
     LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.tga]])
 end
+TWW:RegisterTextures()
 
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
     author = "Karl-Heinz Schneider",
-    version = "1.0",
+    version = version,
     site = "https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin",
     desc = "The War Within Skin.\n\n ...",
     no_cache = true,
@@ -99,25 +114,17 @@ local skinTable = {
                 10 -- [2]
             },
             ["text_color"] = {
-                0.960784375667572, -- [1]
-                0.7960785031318665, -- [2]
-                0.321568638086319, -- [3]
-                1 -- [4]
+                NORMAL_FONT_COLOR.r, -- [1]
+                NORMAL_FONT_COLOR.g, -- [2]
+                NORMAL_FONT_COLOR.b, -- [3]
+                NORMAL_FONT_COLOR.a -- [4]
             },
             ["enable_custom_text"] = false,
             ["show_timer"] = true
         },
         --
         ["row_info"] = {
-            ["textR_outline"] = false,
-            ["textL_outline"] = false,
             ["texture_highlight"] = "Interface\\FriendsFrame\\UI-FriendsList-Highlight",
-            ["textR_show_data"] = {
-                true, -- [1]
-                true, -- [2]
-                true -- [3]
-            },
-            ["textL_enable_custom_text"] = false,
             ["fixed_text_color"] = {
                 1, -- [1]
                 1, -- [2]
@@ -143,16 +150,29 @@ local skinTable = {
             ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small",
             start_after_icon = false, --
             icon_offset = {-30, 0}, --
+            --
+            ["textL_show_number"] = true, --
+            ["textL_outline"] = false,
+            ["textL_enable_custom_text"] = false, --
+            ["textL_custom_text"] = "{data1}. {data3}{data2}", --
+            ["textL_class_colors"] = false,
+            --
+            ["textR_outline"] = false, --
             ["textR_bracket"] = "(",
             ["textR_enable_custom_text"] = false,
+            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
+            ["textR_class_colors"] = false,
+            ["textR_show_data"] = {
+                true, -- [1]
+                true, -- [2]
+                true -- [3]
+            },
+            --
             ["fixed_texture_color"] = {
                 0, -- [1]
                 0, -- [2]
                 0 -- [3]
             },
-            ["textL_show_number"] = true,
-            ["textL_custom_text"] = "{data1}. {data3}{data2}",
-            ["textR_custom_text"] = "{data1} ({data2}, {data3}%)",
             ["models"] = {
                 ["upper_model"] = "Spells\\AcidBreath_SuperGreen.M2",
                 ["lower_model"] = "World\\EXPANSION02\\DOODADS\\Coldarra\\COLDARRALOCUS.m2",
@@ -162,9 +182,7 @@ local skinTable = {
                 ["upper_enabled"] = false
             },
             ["texture_custom_file"] = "Interface\\",
-            ["textR_class_colors"] = false,
             ["texture_custom"] = "",
-            ["textL_class_colors"] = false,
             ["alpha"] = 1,
             ["no_icon"] = false,
             ["texture"] = "TheWarWithinBar",
@@ -186,7 +204,7 @@ local skinTable = {
             icon_size_offset = 1.2
         },
         --
-        menu_icons_alpha = 0.92,
+        menu_icons_alpha = 1,
         ["show_statusbar"] = false,
         ["menu_icons_size"] = 1.07,
         ["color"] = {
@@ -261,7 +279,7 @@ local skinTable = {
             true, -- [4]
             true, -- [5]
             false, -- [6]
-            ["space"] = -2,
+            ["space"] = 0,
             ["shadow"] = false
         },
         ["auto_hide_menu"] = {["left"] = false, ["right"] = false},
@@ -307,5 +325,59 @@ local skinTable = {
 
 function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
+
+    -- hooksecurefunc(Details, 'ChangeSkin', function(self, skin)
+    --     --
+    --     TWW:Debug('ChangeSkin', skin)
+    --     TWW:Debug('self.skin', Details.skin)
+    -- end)
+
     Details:InstallSkin(skinName, skinTable)
+end
+
+function TWW:FixTitleBar()
+    --
+    TWW:Debug('TWW:FixTitleBar()', Details.skin)
+
+    for instanceId = 1, Details:GetNumInstances() do
+        --      
+        local instance = Details:GetInstance(instanceId)
+        if (instance and instance.baseframe and instance.ativa) then instance:ChangeSkin() end
+    end
+end
+
+function TWW:ChangeAugmentationBar()
+    TWW:Debug('TWW:ChangeAugmentationBar()')
+
+    local evokerColor = Details.class_colors["EVOKER"]
+
+    for instanceId = 1, Details:GetNumInstances() do
+        --      
+        -- TWW:Debug('instance', instanceId)
+        local instance = Details:GetInstance(instanceId)
+        if (instance and instance.baseframe and instance.ativa) then
+
+            for lineIndex, line in ipairs(instance:GetAllLines()) do
+                -- TWW:Debug('line', lineIndex, line)
+                local extraStatusbar = line.extraStatusbar
+                extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+                extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+                extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+            end
+        end
+    end
+
+    local gump = Details.gump
+
+    hooksecurefunc(gump, 'CreateNewLine', function(self, instance, index)
+        --
+        -- TWW:Debug('CreateNewLine', instance, index)
+
+        local newLine = _G['DetailsBarra_' .. instance.meu_id .. '_' .. index]
+
+        local extraStatusbar = newLine.extraStatusbar
+        extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+        extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+        extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+    end)
 end
