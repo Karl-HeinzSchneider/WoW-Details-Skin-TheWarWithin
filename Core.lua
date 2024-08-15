@@ -99,10 +99,10 @@ local skinTable = {
                 10 -- [2]
             },
             ["text_color"] = {
-                0.960784375667572, -- [1]
-                0.7960785031318665, -- [2]
-                0.321568638086319, -- [3]
-                1 -- [4]
+                NORMAL_FONT_COLOR.r, -- [1]
+                NORMAL_FONT_COLOR.g, -- [2]
+                NORMAL_FONT_COLOR.b, -- [3]
+                NORMAL_FONT_COLOR.a -- [4]
             },
             ["enable_custom_text"] = false,
             ["show_timer"] = true
