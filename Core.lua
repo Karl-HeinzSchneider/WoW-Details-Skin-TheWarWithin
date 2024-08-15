@@ -9,6 +9,13 @@ local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Bot
 
 local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
+local version = ''
+if not GetAddOnMetadata then
+    version = C_AddOns.GetAddOnMetadata('Details_TWW', 'Version')
+else
+    version = GetAddOnMetadata('Details_TWW', 'Version')
+end
+
 function TWW:OnInitialize()
     -- Called when the addon is loaded
     TWW:Debug('TWW:OnInitialize()')
@@ -54,7 +61,7 @@ TWW:RegisterTextures()
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
     author = "Karl-Heinz Schneider",
-    version = "1.0",
+    version = version,
     site = "https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin",
     desc = "The War Within Skin.\n\n ...",
     no_cache = true,
