@@ -5,7 +5,9 @@ local LSM = LibStub('LibSharedMedia-3.0')
 local skinName = '|cff8080ffThe War Within|r'
 
 local name, realm = UnitName('player')
-local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo')
+local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Botlike')
+
+local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -31,6 +33,7 @@ function TWW:OnEvent(event, arg1, ...)
     if event == 'PLAYER_LOGIN' then
         TWW:RegisterSkin()
         TWW:FixTitleBar()
+        if retail then TWW:ChangeAugmentationBar() end
     end
 end
 
@@ -316,11 +319,11 @@ local skinTable = {
 function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
 
-    hooksecurefunc(Details, 'ChangeSkin', function(self, skin)
-        --
-        TWW:Debug('ChangeSkin', skin)
-        TWW:Debug('self.skin', Details.skin)
-    end)
+    -- hooksecurefunc(Details, 'ChangeSkin', function(self, skin)
+    --     --
+    --     TWW:Debug('ChangeSkin', skin)
+    --     TWW:Debug('self.skin', Details.skin)
+    -- end)
 
     Details:InstallSkin(skinName, skinTable)
 end
@@ -334,4 +337,40 @@ function TWW:FixTitleBar()
         local instance = Details:GetInstance(instanceId)
         if (instance and instance.baseframe and instance.ativa) then instance:ChangeSkin() end
     end
+end
+
+function TWW:ChangeAugmentationBar()
+    TWW:Debug('TWW:ChangeAugmentationBar()')
+
+    local evokerColor = Details.class_colors["EVOKER"]
+
+    for instanceId = 1, Details:GetNumInstances() do
+        --      
+        -- TWW:Debug('instance', instanceId)
+        local instance = Details:GetInstance(instanceId)
+        if (instance and instance.baseframe and instance.ativa) then
+
+            for lineIndex, line in ipairs(instance:GetAllLines()) do
+                -- TWW:Debug('line', lineIndex, line)
+                local extraStatusbar = line.extraStatusbar
+                extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+                extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+                extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+            end
+        end
+    end
+
+    local gump = Details.gump
+
+    hooksecurefunc(gump, 'CreateNewLine', function(self, instance, index)
+        --
+        -- TWW:Debug('CreateNewLine', instance, index)
+
+        local newLine = _G['DetailsBarra_' .. instance.meu_id .. '_' .. index]
+
+        local extraStatusbar = newLine.extraStatusbar
+        extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+        extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+        extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+    end)
 end
