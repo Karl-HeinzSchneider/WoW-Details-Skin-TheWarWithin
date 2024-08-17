@@ -24,6 +24,7 @@ end
 function TWW:OnEnable()
     -- Called when the addon is enabled
     TWW:Debug('TWW:OnEnable()')
+    TWW:RegisterSlashCommand()
 end
 
 function TWW:OnDisable()
@@ -381,3 +382,30 @@ function TWW:ChangeAugmentationBar()
         extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
     end)
 end
+
+function TWW:RegisterSlashCommand()
+    -- Module:RegisterChatCommand('df', 'SlashCommand')
+    TWW:RegisterChatCommand('tww', 'SlashCommand')
+end
+
+function TWW:SlashCommand(msg)
+    TWW:Debug('TWW:SlashCommand()', msg)
+
+    if msg == 'import' then
+        TWW:ShowImportProfile()
+    else
+        TWW:Print([[Slashcommand not found. Did you mean '/tww import'?]])
+    end
+end
+
+function TWW:ShowImportProfile()
+    TWW:Debug('TWW:ShowImportProfile()')
+    TWW:Print('Import default profile...')
+
+    local askForNewProfileName = function(newProfileName, importAutoRunCode)
+        Details:ImportProfile(TWW.DefaultProfileImport, newProfileName, importAutoRunCode, true)
+    end
+    Details.ShowImportProfileConfirmation(LocDetails["STRING_OPTIONS_IMPORT_PROFILE_NAME"] ..
+                                              " [Skin: |cff8080ffDetails_TWW|r]" .. ":", askForNewProfileName)
+end
+
