@@ -9,12 +9,7 @@ local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Bot
 
 local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
-local version = ''
-if not GetAddOnMetadata then
-    version = C_AddOns.GetAddOnMetadata('Details_TWW', 'Version')
-else
-    version = GetAddOnMetadata('Details_TWW', 'Version')
-end
+local version = C_AddOns.GetAddOnMetadata('Details_TWW', 'Version')
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -39,10 +34,22 @@ end
 function TWW:OnEvent(event, arg1, ...)
     TWW:Debug(event, arg1, ...)
     if event == 'PLAYER_LOGIN' then
-        TWW:RegisterSkin()
-        TWW:FixTitleBar()
-        if retail then TWW:ChangeAugmentationBar() end
+        --
+        TWW:SetupAfterLogin()
     end
+end
+
+function TWW:SetupAfterLogin()
+    if Details.IsLoaded and not Details.IsLoaded() then
+        C_Timer.After(0, function()
+            TWW:SetupAfterLogin()
+        end)
+        return
+    end
+
+    TWW:RegisterSkin()
+    TWW:FixTitleBar()
+    if retail then TWW:ChangeAugmentationBar() end
 end
 
 local frame = CreateFrame('FRAME')
@@ -135,7 +142,6 @@ local skinTable = {
             ["space"] = {["right"] = 0, ["left"] = 0, ["between"] = 4}, --
             row_offsets = {left = 29, right = -29 - 8, top = 0, bottom = 0}, --
             ["texture_background_class_color"] = false,
-            ["start_after_icon"] = false, --
             ["font_face_file"] = "Interface\\Addons\\Details\\fonts\\Accidental Presidency.ttf",
             ["backdrop"] = {
                 ["enabled"] = false,
@@ -297,7 +303,6 @@ local skinTable = {
         ["backdrop_texture"] = "Details Ground",
         ["hide_icon"] = true,
         ["bg_b"] = 0.0941176470588235,
-        ["toolbar_side"] = 1,
         ["bg_g"] = 0.0941176470588235,
         ["desaturated_menu"] = false,
         ["wallpaper"] = {
