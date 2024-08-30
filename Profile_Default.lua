@@ -1,3 +1,4 @@
+---@diagnostic disable: inject-field
 local TWW = LibStub('AceAddon-3.0'):GetAddon('Details_TWW')
 
 do
