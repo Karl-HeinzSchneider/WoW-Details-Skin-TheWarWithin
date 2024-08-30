@@ -154,7 +154,7 @@ local skinTable = {
                 },
                 ["texture"] = "Details BarBorder 2"
             },
-            ["icon_file"] = "Interface\\AddOns\\Details\\images\\classes_small",
+            ["icon_file"] = "Interface\\AddOns\\Details_TWW\\Textures\\ClassIconsTWW",
             start_after_icon = false, --
             icon_offset = {-30, 0}, --
             --
