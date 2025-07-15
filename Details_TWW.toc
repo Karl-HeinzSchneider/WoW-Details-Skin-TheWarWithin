@@ -1,6 +1,7 @@
 ## Interface: 110107
+## Interface-Mists: 50500
 ## Interface-Cata: 40402
-## Interface-Wrath: 30403
+## Interface-Wrath: 30404
 ## Interface-Classic: 11507
 ## Title: Details! Skin TWW |cff8080ff@project-version@|r
 ## Notes: Adds the 'The War Within' Skin to Details.|n|cffbbbbbbBy Karl-Heinz Schneider|r|n|n|TInterface/Addons/Details_TWW/Textures/coffee:12:12|t |cff82c5ffbuymeacoffee.com/karlheinzschneider|r
