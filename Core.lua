@@ -4,12 +4,50 @@ local LSM = LibStub('LibSharedMedia-3.0')
 
 local skinName = '|cff8080ffThe War Within|r'
 
-local name, realm = UnitName('player')
+local name = UnitName('player')
 local debugMode = (name == 'Zimtdev') or (name == 'Zimtdevtwo') or (name == 'Botlike')
 
 local retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 local version = C_AddOns.GetAddOnMetadata('Details_TWW', 'Version')
+local isSetupComplete = false
+local isAugmentationHooked = false
+local frame
+
+local function GetDetails()
+    return _G.Details
+end
+
+local function IsDetailsReady()
+    local details = GetDetails()
+    return details and details.IsLoaded and details.IsLoaded()
+end
+
+local function IsInstanceUsable(instance)
+    return instance and instance.baseframe and instance:IsEnabled()
+end
+
+local function GetEvokerColor(details)
+    return (details and details.class_colors and details.class_colors["EVOKER"]) or {0.2, 0.58, 0.5, 1}
+end
+
+local function ApplyAugmentationStyle(line, color)
+    if not line or not line.extraStatusbar then
+        return
+    end
+
+    local extraStatusbar = line.extraStatusbar
+    extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
+
+    local statusbarTexture = extraStatusbar:GetStatusBarTexture()
+    if statusbarTexture then
+        statusbarTexture:SetVertexColor(unpack(color))
+    end
+
+    if extraStatusbar.texture then
+        extraStatusbar.texture:SetVertexColor(unpack(color))
+    end
+end
 
 function TWW:OnInitialize()
     -- Called when the addon is loaded
@@ -33,15 +71,18 @@ end
 
 function TWW:OnEvent(event, arg1, ...)
     TWW:Debug(event, arg1, ...)
-    if event == 'PLAYER_LOGIN' then
-        --
+    if event == 'PLAYER_LOGIN' or event == 'PLAYER_ENTERING_WORLD' then
         TWW:SetupAfterLogin()
     end
 end
 
 function TWW:SetupAfterLogin()
-    if Details.IsLoaded and not Details.IsLoaded() then
-        C_Timer.After(0, function()
+    if isSetupComplete then
+        return
+    end
+
+    if not IsDetailsReady() then
+        C_Timer.After(0.1, function()
             TWW:SetupAfterLogin()
         end)
         return
@@ -50,19 +91,24 @@ function TWW:SetupAfterLogin()
     TWW:RegisterSkin()
     TWW:FixTitleBar()
     if retail then TWW:ChangeAugmentationBar() end
+    isSetupComplete = true
+    frame:UnregisterEvent("PLAYER_LOGIN")
+    frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
 
-local frame = CreateFrame('FRAME')
-frame:SetScript("OnEvent", TWW.OnEvent)
+frame = CreateFrame('FRAME')
+frame:SetScript("OnEvent", function(_, event, ...)
+    TWW:OnEvent(event, ...)
+end)
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 function TWW:RegisterTextures()
     TWW:Debug('TWW:RegisterTextures()')
 
-    LSM:Register('statusbar', 'TheWarWithinHeader', [[Interface\AddOns\Details_TWW\Textures\header.tga]])
-    LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.tga]])
-    LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.tga]])
+    LSM:Register('statusbar', 'TheWarWithinHeader', [[Interface\AddOns\Details_TWW\Textures\header.blp]])
+    LSM:Register('statusbar', 'TheWarWithinBar', [[Interface\AddOns\Details_TWW\Textures\bar.blp]])
+    LSM:Register('statusbar', 'TheWarWithinBackground', [[Interface\AddOns\Details_TWW\Textures\background.blp]])
 end
 TWW:RegisterTextures()
 
@@ -331,6 +377,10 @@ local skinTable = {
 
 function TWW:RegisterSkin()
     TWW:Debug('TWW:RegisterSkin()')
+    local details = GetDetails()
+    if not details then
+        return
+    end
 
     -- hooksecurefunc(Details, 'ChangeSkin', function(self, skin)
     --     --
@@ -338,54 +388,60 @@ function TWW:RegisterSkin()
     --     TWW:Debug('self.skin', Details.skin)
     -- end)
 
-    Details:InstallSkin(skinName, skinTable)
+    details:InstallSkin(skinName, skinTable)
 end
 
 function TWW:FixTitleBar()
     --
-    TWW:Debug('TWW:FixTitleBar()', Details.skin)
+    local details = GetDetails()
+    if not details then
+        return
+    end
 
-    for instanceId = 1, Details:GetNumInstances() do
-        --      
-        local instance = Details:GetInstance(instanceId)
-        if (instance and instance.baseframe and instance.ativa) then instance:ChangeSkin() end
+    TWW:Debug('TWW:FixTitleBar()', details.skin)
+
+    for instanceId = 1, details:GetNumInstances() do
+        local instance = details:GetInstance(instanceId)
+        if IsInstanceUsable(instance) then
+            instance:ChangeSkin()
+        end
     end
 end
 
 function TWW:ChangeAugmentationBar()
     TWW:Debug('TWW:ChangeAugmentationBar()')
+    if isAugmentationHooked then
+        return
+    end
 
-    local evokerColor = Details.class_colors["EVOKER"]
+    local details = GetDetails()
+    if not details then
+        return
+    end
 
-    for instanceId = 1, Details:GetNumInstances() do
-        --      
-        -- TWW:Debug('instance', instanceId)
-        local instance = Details:GetInstance(instanceId)
-        if (instance and instance.baseframe and instance.ativa) then
+    local evokerColor = GetEvokerColor(details)
 
-            for lineIndex, line in ipairs(instance:GetAllLines()) do
-                -- TWW:Debug('line', lineIndex, line)
-                local extraStatusbar = line.extraStatusbar
-                extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
-                extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
-                extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+    for instanceId = 1, details:GetNumInstances() do
+        local instance = details:GetInstance(instanceId)
+        if IsInstanceUsable(instance) then
+
+            for _, line in ipairs(instance:GetAllLines()) do
+                ApplyAugmentationStyle(line, evokerColor)
             end
         end
     end
 
-    local gump = Details.gump
+    local gump = details.gump
+    if not gump or type(gump.CreateNewLine) ~= "function" then
+        return
+    end
 
     hooksecurefunc(gump, 'CreateNewLine', function(self, instance, index)
-        --
-        -- TWW:Debug('CreateNewLine', instance, index)
-
-        local newLine = _G['DetailsBarra_' .. instance.meu_id .. '_' .. index]
-
-        local extraStatusbar = newLine.extraStatusbar
-        extraStatusbar:SetStatusBarTexture([[Interface\AddOns\Details_TWW\Textures\augment]])
-        extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
-        extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+        local newLine = instance and (instance:GetLine(index) or _G['DetailsBarra_' .. instance.meu_id .. '_' .. index])
+        ApplyAugmentationStyle(newLine, evokerColor)
     end)
+
+    isAugmentationHooked = true
 end
 
 function TWW:RegisterSlashCommand()
@@ -407,10 +463,16 @@ function TWW:ShowImportProfile()
     TWW:Debug('TWW:ShowImportProfile()')
     TWW:Print('Import default profile...')
 
-    local askForNewProfileName = function(newProfileName, importAutoRunCode)
-        Details:ImportProfile(TWW.DefaultProfileImport, newProfileName, importAutoRunCode, true)
+    local details = GetDetails()
+    if not details or not details.ImportProfile or not details.ShowImportProfileConfirmation then
+        TWW:Print('Details profile import is not available right now.')
+        return
     end
-    Details.ShowImportProfileConfirmation(LocDetails["STRING_OPTIONS_IMPORT_PROFILE_NAME"] ..
+
+    local askForNewProfileName = function(newProfileName, importAutoRunCode)
+        details:ImportProfile(TWW.DefaultProfileImport, newProfileName, importAutoRunCode, true)
+    end
+    details.ShowImportProfileConfirmation((LocDetails["STRING_OPTIONS_IMPORT_PROFILE_NAME"] or "Profile Name") ..
                                               " [Skin: |cff8080ffDetails_TWW|r]" .. ":", askForNewProfileName)
 end
 
