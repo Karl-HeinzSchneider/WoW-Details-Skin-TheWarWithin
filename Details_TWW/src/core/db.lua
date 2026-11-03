@@ -15,6 +15,12 @@ local profile = {
         -- all stack on one spot; start somewhere else instead.
         minimapPos = 200,
     },
+    -- Skin for Blizzard's built-in damage meter (src/blizzard/damagemeter.lua).
+    blizzardDamageMeter = {
+        enabled = true,
+        -- The bar fill texture: "default" (grey by luminance) or "bright" (grey by the brightest channel).
+        barFill = "default",
+    },
 }
 
 -- Data tied to one character.

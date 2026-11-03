@@ -15,7 +15,8 @@ View on CurseForge: <https://www.curseforge.com/wow/addons/details-skin-the-war-
 ## Installation
 
 Download it from CurseForge or the GitHub releases and put the `Details_TWW` folder into
-`..\World of Warcraft\<client>\Interface\AddOns`. Requires [Details!](https://www.curseforge.com/wow/addons/details).
+`..\World of Warcraft\<client>\Interface\AddOns`. Skins the game's built-in damage meter;
+[Details!](https://www.curseforge.com/wow/addons/details) support is optional and coming later.
 
 ## Usage
 

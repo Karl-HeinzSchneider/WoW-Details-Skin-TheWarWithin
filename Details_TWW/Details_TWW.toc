@@ -4,7 +4,7 @@
 ## IconTexture: Interface\Icons\INV_Misc_QuestionMark
 ## Author: Karl-HeinzSchneider
 ## Version: |cff8080ff@project-version@|r
-## Dependencies: Details
+## OptionalDeps: Details
 ## SavedVariables: Details_TWWDB
 ## X-License: MIT
 ## X-Website: https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin
@@ -17,5 +17,7 @@ src\core\db.lua
 src\core\ace.lua
 src\core\options.lua
 src\core\minimapbutton.lua
+
+src\blizzard\damagemeter.lua
 
 Details_TWW.lua

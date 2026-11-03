@@ -24,6 +24,38 @@ local options = {
     type = "group",
     name = appName,
     args = {
+        blizzardDamageMeter = {
+            type = "toggle",
+            order = 1,
+            width = "full",
+            name = "Skin the Blizzard damage meter",
+            desc = "Applies the 'The War Within' skin to the game's built-in damage meter, whichever style is picked in Edit Mode.",
+            get = function()
+                return app.db.profile.blizzardDamageMeter.enabled
+            end,
+            set = function(_, value)
+                app.db.profile.blizzardDamageMeter.enabled = value
+                app.blizzardDamageMeter:OnProfileRefresh()
+            end,
+        },
+        blizzardDamageMeterBarFill = {
+            type = "select",
+            order = 2,
+            name = "Bar texture",
+            desc = "The fill of the damage meter bars. Bright shows the class color almost at full strength.",
+            values = { default = "Default", bright = "Bright" },
+            sorting = { "default", "bright" },
+            disabled = function()
+                return not app.db.profile.blizzardDamageMeter.enabled
+            end,
+            get = function()
+                return app.db.profile.blizzardDamageMeter.barFill
+            end,
+            set = function(_, value)
+                app.db.profile.blizzardDamageMeter.barFill = value
+                app.blizzardDamageMeter:OnProfileRefresh()
+            end,
+        },
         minimap = {
             type = "toggle",
             order = 10,

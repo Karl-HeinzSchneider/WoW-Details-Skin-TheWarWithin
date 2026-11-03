@@ -6,22 +6,80 @@ that apply everywhere; the addon folder has its own `CLAUDE.md` with its load or
 ## What this is
 
 **Details_TWW** ("Details! Skin TWW") is a World of Warcraft addon that adds the **"The War
-Within"** skin (inspired by /u/Sm0keO's mockup) to the [Details!](https://www.curseforge.com/wow/addons/details)
-damage meter. It is Lua 5.1 on top of Ace3, and the repo also holds the Node/TypeScript tooling that
-checks, links and packages it.
+Within"** skin (inspired by /u/Sm0keO's mockup) to damage meters on every client:
+
+1. **Blizzard's built-in damage meter** (`Blizzard_DamageMeter`): `src/blizzard/damagemeter.lua`.
+2. **[Details!](https://www.curseforge.com/wow/addons/details)**, when it is installed (not built
+   yet). Without Details! that part does nothing.
+
+It is Lua 5.1 on top of Ace3, and the repo also holds the Node/TypeScript tooling that checks, links
+and packages it.
 
 - Author: Karl-Heinz Schneider. CurseForge: <https://www.curseforge.com/wow/addons/details-skin-the-war-within>
   (project id `1083704`, set in the TOC as `## X-Curse-Project-ID`).
-- Hard dependency: `Details` (`## Dependencies: Details`).
+- `Details` is an optional dependency (`## OptionalDeps: Details`); the addon must work without it.
 - The addon name and folder **must stay `Details_TWW`**. It is the folder name that existing
   CurseForge installs use, and texture paths are `Interface\AddOns\Details_TWW\...`.
 
 ### Status (2026-11-03): 2.0 rewrite from a fresh start
 
-The repo was restructured on the WoW-AddonTemplate layout. `Details_TWW/` is currently the
-template's working skeleton (logger, AceDB, options, minimap button, `/tww`), and **no skin code is
-ported yet**. The pre-2.0 addon is in [`legacy/`](legacy/) as reference only (see "Legacy addon"
-below). Features are rebuilt piece by piece, usually from code references the user provides.
+The repo was restructured on the WoW-AddonTemplate layout. `Details_TWW/` is the template's core
+(logger, AceDB, options, minimap button, `/tww`) plus a first Blizzard damage meter skin (header, bar
+fill and bar background textures, toggled in the options). Details! support is **not built yet**;
+the current focus is the Blizzard meter. The pre-2.0 addon is in [`legacy/`](legacy/) as reference
+only (see "Legacy addon" below). Features are rebuilt piece by piece, usually from code references
+the user provides.
+
+### Blizzard damage meter: how it is skinned
+
+`Blizzard_DamageMeter` is identical on Retail, Mists, Anniversary and Era. WoW Forever adds only
+`Camelot/DamageMeterEntryOverrides.lua`, which hides classification icons. There is **no skin API**:
+the styles are the fixed Edit Mode enum `Enum.DamageMeterStyle` (Default, Thin, Bordered,
+FullBackground). So the module:
+
+- waits for the addon with `EventUtil.ContinueOnAddOnLoaded("Blizzard_DamageMeter", ...)`;
+- uses `hooksecurefunc` on `DamageMeterEntryMixin.UpdateStyle` (every bar, also the source window's
+  spell bars), `DamageMeterEntryMixin.UpdateIcon` (every data refresh), `DamageMeterEntryMixin.SetBarHeight` (icon size) and
+  `DamageMeter:SetupSessionWindow` (every window). XML mixins are copied into a frame when it is
+  created, so frames that existed before the hook are hooked individually;
+- only swaps art, and remembers Blizzard's atlases (in weak tables, never as fields on Blizzard
+  frames) so turning the skin off restores them;
+- never replaces Blizzard functions (the meter is an Edit Mode system, so taint matters) and never
+  reads bar values (secret values in 12.x).
+
+What it replaces:
+
+| Blizzard                                                               | Ours                                                                                                                                                                                |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| window `Header` (`ui-damagemeters-header-bar`, 32px)                   | own texture `header` over it, 3-sliced (20/100px) so the ornaments don't stretch; Blizzard's faded to alpha 0 (other regions anchor to it)                                          |
+| bar fill `UI-HUD-CoolDownManager-Bar`                                  | `bar_fill.tga` (grey cast bar fill; `bar_fill_bright.tga` with the "Bright" option) via `SetStatusBarTexture`, vertex color carried over                                            |
+| bar `Background` (per style atlas and insets)                          | cast bar background from `UICastingBar2x` by texcoords, re-anchored 1px outside the StatusBar                                                                                       |
+| bar `BackgroundEdge` (`ui-damagemeters-bar-shadowedge`)                | cast bar border (`ui-castingbar-frame` region), already 2px outside the bar; shown also in the Bordered style                                                                       |
+| player bar icon (spec icon / class atlas)                              | `ClassIconsTWW` cell of the class; spell bars and creatures keep Blizzard's icon; every bar's icon frame is a square as tall as the row (Blizzard: 24px), resized on `SetBarHeight` |
+| bar `Name`/`Value` font (`NumberFontNormal`, outlined Arial Narrow 14) | `GameFontHighlight` (Friz Quadrata 12, shadow, white) via `SetFontObject`, so Blizzard's per-alphabet fallbacks stay; the Edit Mode text size still applies (`SetTextScale`)        |
+
+The bars look like Blizzard's retail cast bar (as the legacy Details! skin did) in **every** Edit
+Mode style; the style only decides the StatusBar's size and position, which stay Blizzard's (Thin
+puts the name above the bar). The art is `Interface\CastingBar\UICastingBar2x` (1024x512), cut by the
+retail atlas coordinates: the file is on every client (identical in the Classic art export), the
+`ui-castingbar-*` atlases are not.
+
+Lessons from in-game testing:
+
+- **Atlases can carry texture slice margins, and `SetTexture` keeps them.** Reset them with
+  `SetTextureSliceMargins(0, 0, 0, 0)` on every reused region (Blizzard's nameplates do the same), or
+  use an own texture.
+- **A StatusBar manages its fill's texture coordinates**, so `SetTexCoord` can't crop a fill; the
+  fill needs its own file (`bar_fill.tga`), the other regions can use a sheet.
+- **Blizzard's `UpdateBackground` resets the alpha of `Background` and `BackgroundEdge`**, so they are
+  reused with our art instead of faded out.
+- The legacy `bar.blp`/`background.blp` were made for Details!' 28px rows (an ~11px bar under the
+  name) and look smeared on Blizzard's 24px bar; they are not used for the Blizzard meter.
+
+Not touched yet: the window background
+`MinimizeContainer.Background` (`damagemeters-background`), the header fonts (already Friz Quadrata 13 gold, `GameFontNormalMed1`, like the legacy title), the source window background and
+spec icons (the legacy `specs.blp` sheet uses Details!' spec coordinates; Blizzard only gives a spec
+icon file id).
 
 ### Target clients
 

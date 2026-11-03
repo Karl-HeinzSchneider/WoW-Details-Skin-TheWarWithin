@@ -40,6 +40,14 @@ be listed**. The order follows these rules:
   options and honors `profile.minimap`. Optional: to drop it, delete the file, its TOC line, the
   `minimap` option and `profile.minimap`.
 
+### `src/blizzard/`
+
+- `damagemeter.lua` — `app.blizzardDamageMeter`: the skin for Blizzard's built-in damage meter.
+  It hooks `DamageMeterEntryMixin.UpdateStyle`/`UpdateIcon`/`SetBarHeight` and `DamageMeter:SetupSessionWindow`
+  once `Blizzard_DamageMeter` is loaded, and swaps the header, the bars (cast bar look) and player
+  class icons (row-high), and gives the bar texts Friz Quadrata (`GameFontHighlight`). `profile.blizzardDamageMeter.enabled` turns it on and off (restoring Blizzard's
+  atlases), `barFill` picks the fill texture; `Apply()` re-skins everything that exists. See the root `CLAUDE.md` for the approach.
+
 ### Annotations (not in the TOC)
 
 - `src/types.lua` — the private-table class `Details_TWW` (`app.*` fields) and
@@ -51,7 +59,12 @@ be listed**. The order follows these rules:
   LuaLS, StyLua and Prettier; update by replacing the folder, don't patch. `embeds.xml` loads all
   of them; drop a line there (not the folder) to skip a library the addon doesn't use.
 - `assets/` — textures the game files cannot provide (`assets/core/coffee.tga` is the TOC notes'
-  donation icon).
+  donation icon). `assets/skin/` holds the skin's art: `header` (256×32 `.blp`) and
+  `ClassIconsTWW` (512×512, 64px class cells) from `legacy/Textures/`, and `bar_fill.tga` (512×32,
+  Blizzard's `ui-castingbar-full-channel` cut out of `Interface\CastingBar\UICastingBar2x` and
+  turned grey by luminance (Rec. 601) so the class color tints it; `bar_fill_bright.tga` is the same
+  turned grey by the brightest channel, for `profile.blizzardDamageMeter.barFill = "bright"`). The bar background and border are not
+  shipped; they come straight from `UICastingBar2x` by texture coordinates.
 
 ## Conventions
 
