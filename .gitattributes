@@ -1,2 +1,10 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Normalize text files to LF in the repository and in the working copy, on every OS
+# (overrides a global core.autocrlf=true).
+* text=auto eol=lf
+
+# Binary assets: never touch.
+*.blp binary
+*.tga binary
+*.png binary
+*.jpg binary
+*.zip binary

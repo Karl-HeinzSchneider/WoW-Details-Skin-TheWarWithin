@@ -1,3 +1,9 @@
+node_modules/
+.cache/
+dist/
+.release/
+
+# Local Details! dumps (legacy dev files)
 detailsDB.lua
 detailsProfile.lua
 detailsSkin.lua

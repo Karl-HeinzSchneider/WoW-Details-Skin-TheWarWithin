@@ -1,0 +1,6 @@
+Details_TWW/lib/
+.release/
+legacy/
+detailsDB.lua
+detailsProfile.lua
+detailsSkin.lua

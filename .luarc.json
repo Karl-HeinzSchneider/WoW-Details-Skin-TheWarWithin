@@ -1,0 +1,6 @@
+{
+  "runtime.version": "Lua 5.1",
+  "workspace.checkThirdParty": false,
+  "workspace.ignoreDir": ["Details_TWW/lib", ".release", "legacy"],
+  "diagnostics.globals": ["Details_TWWDB", "LibStub", "Details"]
+}
