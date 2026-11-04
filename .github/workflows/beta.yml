@@ -1,0 +1,21 @@
+# Actions > Beta > Run workflow: tags the head of main with the given beta version and uploads it
+# as a beta.
+name: Beta
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Beta version to tag on main, e.g. v1.1.0-beta1
+        required: true
+        type: string
+
+jobs:
+  package:
+    uses: ./.github/workflows/package.yml
+    with:
+      tag: ${{ inputs.version }}
+      kind: beta
+    permissions:
+      contents: write
+    secrets: inherit

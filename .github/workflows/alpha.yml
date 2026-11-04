@@ -1,22 +1,22 @@
-name: Release Preview
+# Actions > Alpha > Run workflow: uploads the head of main as an alpha. Without a version it is
+# not tagged (versioned after the last tag, e.g. v1.0.0-3-gabc1234, and no GitHub release);
+# with one, e.g. v1.1.0-alpha1, that tag is created first.
+name: Alpha
 
 on:
-  push:
-    branches:
-      - "**-preview"
-
-env:
-  CF_API_KEY: ${{ secrets.CF_API_KEY }}
-  GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional alpha version to tag on main, e.g. v1.1.0-alpha1
+        required: false
+        type: string
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - uses: BigWigsMods/packager@v2
-        with:
-          args: -S -n "{package-name}-{project-version}"
+  package:
+    uses: ./.github/workflows/package.yml
+    with:
+      tag: ${{ inputs.version }}
+      kind: alpha
+    permissions:
+      contents: write
+    secrets: inherit

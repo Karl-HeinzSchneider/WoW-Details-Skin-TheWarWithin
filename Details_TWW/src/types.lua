@@ -1,0 +1,23 @@
+-- Type annotations only; this file is not listed in the TOC and never runs in-game.
+-- It exists so the Lua language server can type the `...` vararg every file receives.
+-- Every file should start with:
+--   ---@type string, Details_TWW
+--   local appName, app = ...
+-- When a file adds something to `app`, add a matching ---@field here.
+
+---@class Details_TWW
+---@field logger Details_TWW.Logger
+---@field addon Details_TWW.Addon
+---@field dbDefaults Details_TWW.DBDefaults
+---@field db Details_TWW.DB
+---@field options Details_TWW.Options  # the AceConfig options, in the Settings panel and a standalone window
+---@field minimapButton Details_TWW.MinimapButton
+---@field blizzardDamageMeter Details_TWW.BlizzardDamageMeter  # the skin for Blizzard's built-in damage meter
+---@field detailsSkin Details_TWW.DetailsSkin  # the skin for Details!, installed into its skin list
+
+-- The AceDB object, with profile/char/global narrowed to the shape of app.dbDefaults.
+-- Ace3 API types (AceAddon, AceDBObject-3.0, ...) come from the ketho.wow-api extension.
+---@class Details_TWW.DB : AceDBObject-3.0
+---@field profile Details_TWW.DB.Profile
+---@field char Details_TWW.DB.Char
+---@field global Details_TWW.DB.Global

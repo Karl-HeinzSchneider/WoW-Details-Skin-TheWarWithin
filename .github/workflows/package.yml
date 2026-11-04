@@ -1,0 +1,100 @@
+# Shared job of the release workflows (release-tag, release, beta, alpha); not run on its own.
+# Runs the BigWigs packager (https://github.com/BigWigsMods/packager) and uploads the zip to
+# CurseForge, Wago, WoWInterface and GitHub Releases. What goes into the zip is set in .pkgmeta,
+# the project ids come from Details_TWW/Details_TWW.toc.
+#
+# The packager takes the release type from the tag on the packaged commit: a tag containing
+# "alpha" is an alpha, one containing "beta" a beta, any other tag a release. An untagged commit
+# is an alpha versioned after the last tag (v1.0.0-3-gabc1234) and gets no GitHub release.
+#
+# Repository secrets (Settings > Secrets and variables > Actions); the packager skips a site
+# whose token is missing:
+#   CF_API_KEY      https://legacy.curseforge.com/account/api-tokens
+#   WAGO_API_TOKEN  https://addons.wago.io/account/apikeys
+#   WOWI_API_TOKEN  https://www.wowinterface.com/downloads/filecpl.php?action=apitokens
+name: Package
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag to create on the head of main before packaging; empty packages the triggering ref as it is.
+        type: string
+        default: ""
+      kind:
+        description: release, beta or alpha; the tag must name that kind.
+        type: string
+        default: ""
+    secrets:
+      CF_API_KEY:
+        required: false
+      WAGO_API_TOKEN:
+        required: false
+      WOWI_API_TOKEN:
+        required: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the tag, create the GitHub release
+    concurrency:
+      group: package
+      cancel-in-progress: false
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check the tag name
+        if: inputs.tag != ''
+        env:
+          TAG: ${{ inputs.tag }}
+          KIND: ${{ inputs.kind }}
+        run: |
+          tag="$TAG"
+          [[ $tag == v* ]] || tag="v$tag"
+          lower="${tag,,}"
+          case "$KIND" in
+            release) [[ $lower =~ ^v[0-9]+(\.[0-9]+)*$ ]] || { echo "::error::A release tag looks like v1.0 or v1.0.0, not '$tag'."; exit 1; } ;;
+            beta) [[ $lower == *beta* && $lower != *alpha* ]] || { echo "::error::A beta tag must contain 'beta' (v1.1.0-beta1), not '$tag'."; exit 1; } ;;
+            alpha) [[ $lower == *alpha* ]] || { echo "::error::An alpha tag must contain 'alpha' (v1.1.0-alpha1), not '$tag'."; exit 1; } ;;
+          esac
+          [[ $tag =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::'$tag' is not a valid tag name."; exit 1; }
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v5
+        with:
+          # A tag push packages that tag; the manual workflows always package main, whichever
+          # branch they were started from.
+          ref: ${{ github.event_name == 'push' && github.ref || 'main' }}
+          fetch-depth: 0 # the changelog is built from the history since the previous tag
+
+      - name: Check that the commit is on main
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::$(git rev-parse --short HEAD) is not on main; only commits on main are released."
+            exit 1
+          fi
+
+      - name: Tag the commit
+        if: inputs.tag != ''
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then
+            # A re-run of a failed workflow: reuse the tag if it already marks this commit.
+            if [ "$(git rev-list -n 1 "$TAG")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::Tag $TAG already exists on another commit."
+              exit 1
+            fi
+            echo "Tag $TAG already marks $(git rev-parse --short HEAD)."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "$TAG"
+            # A tag pushed with GITHUB_TOKEN starts no workflow, so release-tag.yml won't
+            # package it a second time.
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - uses: BigWigsMods/packager@v2

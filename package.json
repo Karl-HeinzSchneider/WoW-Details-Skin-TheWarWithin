@@ -1,0 +1,29 @@
+{
+  "name": "wow-details_tww",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Details_TWW World of Warcraft addon and its dev tooling",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "npm run typecheck && npm run check:addons && npm run check:lua && npm run check:xml && npm run format:check",
+    "check:addons": "tsx src/check-addons.ts",
+    "check:lua": "tsx src/check-lua.ts",
+    "check:xml": "tsx src/check-xml.ts",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write . && stylua .",
+    "format:check": "prettier --check . && stylua --check .",
+    "dev:link": "tsx src/link-addons.ts",
+    "package:addons": "tsx src/package-addons.ts",
+    "package:local": "tsx src/package-local.ts"
+  },
+  "devDependencies": {
+    "@johnnymorganz/stylua-bin": "^2.5.2",
+    "@types/node": "^22.0.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

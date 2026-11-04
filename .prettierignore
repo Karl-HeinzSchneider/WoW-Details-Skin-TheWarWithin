@@ -1,0 +1,6 @@
+Details_TWW/lib/
+package-lock.json
+legacy/
+detailsDB.lua
+detailsProfile.lua
+detailsSkin.lua

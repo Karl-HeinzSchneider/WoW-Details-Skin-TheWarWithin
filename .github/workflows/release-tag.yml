@@ -1,0 +1,16 @@
+# Packages and uploads every v* tag pushed to GitHub (`git tag v1.0 && git push origin v1.0`),
+# as long as the tagged commit is on main. The tag name sets the type: v1.1-beta1 is a beta,
+# v1.1-alpha1 an alpha, anything else a release.
+name: Release (tag push)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  package:
+    uses: ./.github/workflows/package.yml
+    permissions:
+      contents: write
+    secrets: inherit

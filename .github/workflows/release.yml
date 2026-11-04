@@ -1,22 +1,21 @@
-name: Release AddOn
+# Actions > Release > Run workflow: tags the head of main with the given version and uploads it
+# as a release.
+name: Release
 
 on:
-  push:
-    tags:
-      - "**"
-
-env:
-  CF_API_KEY: ${{ secrets.CF_API_KEY }}
-  GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version to tag on main, e.g. v1.0.0
+        required: true
+        type: string
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - uses: BigWigsMods/packager@v2
-        with:
-          args: -S -n "{package-name}-{project-version}"
+  package:
+    uses: ./.github/workflows/package.yml
+    with:
+      tag: ${{ inputs.version }}
+      kind: release
+    permissions:
+      contents: write
+    secrets: inherit
