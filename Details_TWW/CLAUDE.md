@@ -54,7 +54,9 @@ be listed**. The order follows these rules:
   statusbar media (and the legacy names), installs the skin with `Details:InstallSkin` and hooks
   `Details.RefreshTitleBar` to 3-slice our header, `Details.ChangeSkin` to hide the window texture's
   own header band, and `Details.InstanceRefreshRows`/
-  `Details.gump.CreateNewLine` to anchor our row background to the bar instead of the whole row. It never changes a window on its own;
+  `Details.gump.CreateNewLine` to anchor our row background to the bar instead of the whole row, and
+  `Details.SetClassIcon` to draw our class icon where Details! can't map Blizzard's spec icon id
+  (every player on WoW Forever). It never changes a window on its own;
   `ApplyToAllWindows()` (the options button) switches every open window. `IsAvailable()` is false
   without Details!. See the root `CLAUDE.md` for the API notes.
 

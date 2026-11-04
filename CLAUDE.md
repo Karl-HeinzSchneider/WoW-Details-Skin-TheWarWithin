@@ -107,14 +107,21 @@ a Details! bar always covers its whole row, so the row textures (`details_bar_*.
 row at 2x, built from `UICastingBar2x` like the Blizzard bars) carry the cast bar in their bottom
 15px and are transparent above it; `text_yoffset` 7 lifts the texts above the bar. Fill = grey cast
 bar fill 2px inside, background 1px inside, border = the overlay texture (above the fill, not cut by
-the value). Icons: `ClassIconsTWW`, spec icons `specs.blp` (Details!' spec layout). Title bar: 32px
+the value). Icons: `ClassIconsTWW`, spec icons `specs.blp` (Details!' spec layout). On Retail and WoW Forever
+Details! reads Blizzard's damage meter (`Details:IsUsingBlizzardAPI`) and maps its `specIconID` to a
+spec through DetailsFramework's table. On Forever `specIconID` is a secret value (`SecretValue` in its
+`DamageMeterDocumentation.lua`; Retail's is `NeverSecret`), so the lookup fails and Details! draws
+Blizzard's square icon. A hook on `Details.SetClassIcon` draws our class icon (from the never-secret
+`classFilename`) whenever the icon is secret or unmapped. Title bar: 32px
 `header`, 3-sliced by a hook on `Details.RefreshTitleBar`. Details! anchors a row's background to the
 whole row (icon included) once at creation, so hooks on `Details.InstanceRefreshRows` and
 `Details.gump.CreateNewLine` anchor it to the row's StatusBar while the window uses our background. Window frame art and anchors follow
 Details!' "Minimalistic v2" (window background, the area behind the rows, at alpha 0); that frame texture also draws
-a header band of its own (`cabecalho.ball`, `emenda`, `top_bg`, `ball_r`), which a hook on
-`Details.ChangeSkin` clears for our skin (only `ChangeSkin` sets those textures; the regions stay as
-anchors, e.g. for the invisible drag frame `DetailsUpFrameInstance<id>`). The title text and menu offsets (`attribute_text.anchor`, `menu_anchor`)
+a header band of its own (`cabecalho.ball`, `emenda`, `top_bg`, `ball_r`; in `/fstack` a dark strip at
+the drag frame `DetailsUpFrameInstance<id>`), which a hook on `Details.ChangeSkin` hides for our skin
+(hidden regions still work as anchors; only the ones we hid are shown again for another skin), and
+`Install` does the same for windows skinned before the hook existed. Clearing their texture was not
+enough: the band came back. The title text and menu offsets (`attribute_text.anchor`, `menu_anchor`)
 are first guesses and need in-game tuning.
 
 ### Target clients

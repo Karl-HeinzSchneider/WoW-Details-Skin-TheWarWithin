@@ -24,6 +24,8 @@ local addon = app.addon
 --   Details.ChangeSkin                        hide the window texture's own header band behind it
 --   Details.InstanceRefreshRows,              anchor the row background to the bar instead of the
 --   Details.gump.CreateNewLine                whole row (which includes the icon)
+--   Details.SetClassIcon                      our class icon where Details! can't map Blizzard's
+--                                             spec icon (WoW Forever)
 --
 -- Details! starts its windows one frame after PLAYER_LOGIN, after every addon loaded, so registering
 -- and installing in OnInitialize is early enough. no_cache: Details! would otherwise keep its own copy
@@ -225,25 +227,47 @@ local function sliceTitleBar(instance)
 end
 
 -- The window frame texture (skin.file) also draws a header band of its own (the corner pieces
--- "ball"/"ball_r", "emenda" and "top_bg" of cabecalho) behind our title bar. Only ChangeSkin sets
--- their texture, so clearing it after ChangeSkin hides them; another skin sets them again itself.
--- They stay in place as anchors for the menu buttons and the window's drag area.
+-- "ball"/"ball_r", "emenda" and "top_bg" of cabecalho, regions of the base frame) behind our title
+-- bar, a dark strip around the drag frame DetailsUpFrameInstance<id>. They are hidden while a window
+-- uses our skin; hidden regions keep their place as anchors for the menu buttons and the drag frame.
+-- Details! never shows them again itself (it hides "ball" on creation), so only the regions we hid
+-- are shown again when the window switches to another skin.
 local HEADER_BAND_REGIONS = { "ball", "emenda", "top_bg", "ball_r" }
 
+---@type table<Texture, boolean>
+local hiddenBandRegions = setmetatable({}, { __mode = "k" })
+
 ---@param instance table a Details! window
-local function clearHeaderBand(instance)
-    if instance.skin ~= SKIN_NAME then
-        return
-    end
-    local header = instance.baseframe and instance.baseframe.cabecalho
+local function updateHeaderBand(instance)
+    local header = instance and instance.baseframe and instance.baseframe.cabecalho
     if not header then
         return
     end
+    local ours = instance.skin == SKIN_NAME
     for _, key in ipairs(HEADER_BAND_REGIONS) do
         local region = header[key]
         if region then
-            region:SetTexture(nil)
+            if ours then
+                if region:IsShown() then
+                    region:Hide()
+                    hiddenBandRegions[region] = true
+                end
+            elseif hiddenBandRegions[region] then
+                region:Show()
+                hiddenBandRegions[region] = nil
+            end
         end
+    end
+end
+
+-- Windows Details! created and skinned before our hooks existed.
+local function updateExistingWindows()
+    local details = _G.Details
+    if not details or not details.ListInstances then
+        return
+    end
+    for _, instance in details:ListInstances() do
+        updateHeaderBand(instance)
     end
 end
 
@@ -297,6 +321,58 @@ local function onCreateNewLine(_, instance, index)
     end
 end
 
+-- With Blizzard's damage meter data (Retail and WoW Forever), Details! gets a spec icon file id per
+-- player and maps it to a spec of its own table, drawn from row_info.spec_file. An id it can't map
+-- (an unknown id, or a secret one: on WoW Forever specIconID is always secret) is drawn as Blizzard's
+-- square icon instead; on our skin that becomes the class icon from row_info.icon_file
+-- (classFilename is never secret).
+-- Details! (Details:SetClassIcon) maps a few icons by hand where its table has a spec it has no cell for.
+local SPEC_ICON_FALLBACK = { [461112] = 253, [608953] = 269, [135846] = 64, [136145] = 265 }
+
+-- Whether Details! finds a cell of row_info.spec_file for a Blizzard spec icon, decided the way
+-- Details:SetClassIcon decides it (the drawn texture is not read back: GetTexture may not return the
+-- file id it was given).
+---@param specIcon number
+---@return boolean
+local function detailsMapsSpecIcon(specIcon)
+    local framework, specCoords = _G.DetailsFramework, _G.Details.class_specs_coords
+    if not framework or not framework.GetSpecInfoFromSpecIcon or not specCoords then
+        return true -- can't tell; leave Details!' icon alone
+    end
+    local specInfo = framework:GetSpecInfoFromSpecIcon(specIcon)
+    local specId = specInfo and specInfo.specId
+    if specId and not specCoords[specId] then
+        specId = SPEC_ICON_FALLBACK[specIcon] or specId
+    end
+    return specId ~= nil and specCoords[specId] ~= nil
+end
+
+-- Called as actor:SetClassIcon(texture, instance, class) and Details.SetClassIcon(actor, ...).
+local function onSetClassIcon(actor, texture, instance, class)
+    if not instance or instance.skin ~= SKIN_NAME or not texture or type(actor) ~= "table" then
+        return
+    end
+    local rowInfo = instance.row_info
+    local specIcon = actor.thisSpecIcon
+    if not rowInfo or not rowInfo.use_spec_icons or not specIcon then
+        return
+    end
+    -- A secret icon (always on WoW Forever, where specIconID is a SecretValue; never on Retail) can't
+    -- be looked up, by Details! or by us, so Details! drew it as it is: show the class instead.
+    local secret = issecretvalue and issecretvalue(specIcon)
+    if not secret and detailsMapsSpecIcon(specIcon) then
+        return
+    end
+    local coords = _G.Details.class_coords
+    class = class or actor.classe
+    local cell = coords and (type(class) == "string" and coords[class] or coords.UNKNOW)
+    if not cell then
+        return
+    end
+    texture:SetTexture(rowInfo.icon_file)
+    texture:SetTexCoord(unpack(cell))
+end
+
 function module:Install()
     if self.installed then
         return
@@ -322,7 +398,7 @@ function module:Install()
         hooksecurefunc(details, "RefreshTitleBar", sliceTitleBar)
     end
     if details.ChangeSkin then
-        hooksecurefunc(details, "ChangeSkin", clearHeaderBand)
+        hooksecurefunc(details, "ChangeSkin", updateHeaderBand)
     end
     if details.InstanceRefreshRows then
         hooksecurefunc(details, "InstanceRefreshRows", onRefreshRows)
@@ -330,6 +406,10 @@ function module:Install()
     if details.gump and details.gump.CreateNewLine then
         hooksecurefunc(details.gump, "CreateNewLine", onCreateNewLine)
     end
+    if details.SetClassIcon then
+        hooksecurefunc(details, "SetClassIcon", onSetClassIcon)
+    end
+    updateExistingWindows()
     log:debug("Details! skin installed")
 end
 
