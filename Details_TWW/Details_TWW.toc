@@ -19,5 +19,6 @@ src\core\options.lua
 src\core\minimapbutton.lua
 
 src\blizzard\damagemeter.lua
+src\details\skin.lua
 
 Details_TWW.lua

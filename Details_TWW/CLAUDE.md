@@ -9,7 +9,7 @@ The TOC is the manifest and the source of truth for the load order; **every new 
 be listed**. The order follows these rules:
 
 1. `embeds.xml` first: every vendored library in dependency order (LibStub → CallbackHandler →
-   Ace\* → LibDataBroker → LibDBIcon).
+   Ace\* → LibSharedMedia → LibDataBroker → LibDBIcon).
 2. `src\core\`: `logger.lua` first (everything logs), `db.lua` (the defaults `ace.lua` needs),
    `ace.lua` (creates `app.addon`), then the Ace modules that hang off it (`options.lua`,
    `minimapbutton.lua`).
@@ -48,6 +48,16 @@ be listed**. The order follows these rules:
   class icons (row-high), and gives the bar texts Friz Quadrata (`GameFontHighlight`). `profile.blizzardDamageMeter.enabled` turns it on and off (restoring Blizzard's
   atlases), `barFill` picks the fill texture; `Apply()` re-skins everything that exists. See the root `CLAUDE.md` for the approach.
 
+### `src/details/`
+
+- `skin.lua` — `app.detailsSkin`: the Details! skin. `OnInitialize` registers our LibSharedMedia
+  statusbar media (and the legacy names), installs the skin with `Details:InstallSkin` and hooks
+  `Details.RefreshTitleBar` to 3-slice our header, `Details.ChangeSkin` to hide the window texture's
+  own header band, and `Details.InstanceRefreshRows`/
+  `Details.gump.CreateNewLine` to anchor our row background to the bar instead of the whole row. It never changes a window on its own;
+  `ApplyToAllWindows()` (the options button) switches every open window. `IsAvailable()` is false
+  without Details!. See the root `CLAUDE.md` for the API notes.
+
 ### Annotations (not in the TOC)
 
 - `src/types.lua` — the private-table class `Details_TWW` (`app.*` fields) and
@@ -55,7 +65,7 @@ be listed**. The order follows these rules:
 
 ### Other
 
-- `lib/` — vendored Ace3, LibStub, CallbackHandler, LibDBIcon (+ LibDataBroker). Excluded from
+- `lib/` — vendored Ace3, LibStub, CallbackHandler, LibSharedMedia-3.0 (copied from Details!), LibDBIcon (+ LibDataBroker). Excluded from
   LuaLS, StyLua and Prettier; update by replacing the folder, don't patch. `embeds.xml` loads all
   of them; drop a line there (not the folder) to skip a library the addon doesn't use.
 - `assets/` — textures the game files cannot provide (`assets/core/coffee.tga` is the TOC notes'
@@ -63,7 +73,10 @@ be listed**. The order follows these rules:
   `ClassIconsTWW` (512×512, 64px class cells) from `legacy/Textures/`, and `bar_fill.tga` (512×32,
   Blizzard's `ui-castingbar-full-channel` cut out of `Interface\CastingBar\UICastingBar2x` and
   turned grey by luminance (Rec. 601) so the class color tints it; `bar_fill_bright.tga` is the same
-  turned grey by the brightest channel, for `profile.blizzardDamageMeter.barFill = "bright"`). The bar background and border are not
+  turned grey by the brightest channel, for `profile.blizzardDamageMeter.barFill = "bright"`).
+  For Details!: `details_bar_fill`, `details_bar_fill_bright`, `details_bar_background`,
+  `details_bar_border` (512×64 row textures, cast bar in the bottom 15 of 32px) and `specs.blp`
+  (spec icons in Details!' layout, from `legacy/Textures/`). The bar background and border are not
   shipped; they come straight from `UICastingBar2x` by texture coordinates.
 
 ## Conventions

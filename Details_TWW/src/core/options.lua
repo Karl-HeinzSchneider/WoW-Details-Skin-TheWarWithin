@@ -56,6 +56,22 @@ local options = {
                 app.blizzardDamageMeter:OnProfileRefresh()
             end,
         },
+        detailsApply = {
+            type = "execute",
+            order = 5,
+            width = "double",
+            name = "Apply to all Details! windows",
+            desc = "Switches every open Details! window to the 'The War Within' skin. The skin is also in the skin list of Details!' own options, to pick it per window.",
+            confirm = true,
+            confirmText = "Switch every open Details! window to the 'The War Within' skin? This replaces the windows' appearance settings.",
+            hidden = function()
+                return not app.detailsSkin:IsAvailable()
+            end,
+            func = function()
+                local count = app.detailsSkin:ApplyToAllWindows()
+                log:chat("Applied the Details! skin to %d window(s).", count)
+            end,
+        },
         minimap = {
             type = "toggle",
             order = 10,

@@ -9,8 +9,8 @@ that apply everywhere; the addon folder has its own `CLAUDE.md` with its load or
 Within"** skin (inspired by /u/Sm0keO's mockup) to damage meters on every client:
 
 1. **Blizzard's built-in damage meter** (`Blizzard_DamageMeter`): `src/blizzard/damagemeter.lua`.
-2. **[Details!](https://www.curseforge.com/wow/addons/details)**, when it is installed (not built
-   yet). Without Details! that part does nothing.
+2. **[Details!](https://www.curseforge.com/wow/addons/details)**, when it is installed:
+   `src/details/skin.lua`. Without Details! that part does nothing.
 
 It is Lua 5.1 on top of Ace3, and the repo also holds the Node/TypeScript tooling that checks, links
 and packages it.
@@ -24,9 +24,10 @@ and packages it.
 ### Status (2026-11-03): 2.0 rewrite from a fresh start
 
 The repo was restructured on the WoW-AddonTemplate layout. `Details_TWW/` is the template's core
-(logger, AceDB, options, minimap button, `/tww`) plus a first Blizzard damage meter skin (header, bar
-fill and bar background textures, toggled in the options). Details! support is **not built yet**;
-the current focus is the Blizzard meter. The pre-2.0 addon is in [`legacy/`](legacy/) as reference
+(logger, AceDB, options, minimap button, `/tww`) plus the Blizzard damage meter skin (header, cast bar
+style bars, row-high class icons, Friz Quadrata bar text; toggled in the options) and a first Details!
+skin (installed into Details!' skin list, untested in-game so far). The Evoker Augmentation bar is
+left for later. The pre-2.0 addon is in [`legacy/`](legacy/) as reference
 only (see "Legacy addon" below). Features are rebuilt piece by piece, usually from code references
 the user provides.
 
@@ -80,6 +81,41 @@ Not touched yet: the window background
 `MinimizeContainer.Background` (`damagemeters-background`), the header fonts (already Friz Quadrata 13 gold, `GameFontNormalMed1`, like the legacy title), the source window background and
 spec icons (the legacy `specs.blp` sheet uses Details!' spec coordinates; Blizzard only gives a spec
 icon file id).
+
+### Details!: how it is skinned
+
+Checked against Details! `#Details.20261015` (one package for every client). The API:
+
+- `Details:InstallSkin(name, skin)` adds a skin to the skin list of Details!' options; it changes no
+  window. `no_cache = true` lets it run any time and keeps Details! from storing a copy of the table
+  in its saved variables (which would go stale and point at our files after we're gone). Windows
+  whose skin is not installed yet wait for it and switch when it arrives.
+- `instance:ChangeSkin(name)` applies it: after a config reset, `skin.instance_cprops` is copied over
+  the window's settings **two levels deep** (a table under `row_info` replaces the window's whole
+  table, so give every key; `row_info.texts` is the exception, Details! fills it from its defaults).
+  A window already on the skin only refreshes, so `ApplyToAllWindows` clears `instance.skin` first.
+- The skin's `callback` is no longer called; what settings can't do is a `hooksecurefunc` on a
+  `Details` method (instances inherit from `Details` by metatable, so the hook reaches all windows).
+- Details! starts its windows one frame after `PLAYER_LOGIN`, so installing in `OnInitialize` is early
+  enough (`OptionalDeps: Details` loads it before us).
+- Every texture a window uses (`row_info.texture`, `texture_background`, `overlay_texture`,
+  `titlebar_texture`) is looked up through **LibSharedMedia by name**.
+
+What our skin sets: the skin name is the legacy one (`|cff8080ffThe War Within|r`), so windows and
+profiles saved with the old skin find it; the legacy media names are registered too. Rows are 32px:
+a Details! bar always covers its whole row, so the row textures (`details_bar_*.tga`, 512x64 = a 32px
+row at 2x, built from `UICastingBar2x` like the Blizzard bars) carry the cast bar in their bottom
+15px and are transparent above it; `text_yoffset` 7 lifts the texts above the bar. Fill = grey cast
+bar fill 2px inside, background 1px inside, border = the overlay texture (above the fill, not cut by
+the value). Icons: `ClassIconsTWW`, spec icons `specs.blp` (Details!' spec layout). Title bar: 32px
+`header`, 3-sliced by a hook on `Details.RefreshTitleBar`. Details! anchors a row's background to the
+whole row (icon included) once at creation, so hooks on `Details.InstanceRefreshRows` and
+`Details.gump.CreateNewLine` anchor it to the row's StatusBar while the window uses our background. Window frame art and anchors follow
+Details!' "Minimalistic v2" (window background, the area behind the rows, at alpha 0); that frame texture also draws
+a header band of its own (`cabecalho.ball`, `emenda`, `top_bg`, `ball_r`), which a hook on
+`Details.ChangeSkin` clears for our skin (only `ChangeSkin` sets those textures; the regions stay as
+anchors, e.g. for the invisible drag frame `DetailsUpFrameInstance<id>`). The title text and menu offsets (`attribute_text.anchor`, `menu_anchor`)
+are first guesses and need in-game tuning.
 
 ### Target clients
 
@@ -257,8 +293,8 @@ feature list and a source of values, not as code to copy wholesale.
   Details profile format.
 - `legacy/Textures/` holds the skin's own art: `header`, `bar`, `background`, `augment`,
   `ClassIconsTWW`, `specs`. They move into `Details_TWW/assets/` when the feature using them is ported.
-- `legacy/Libs/` is the old embedded Ace3 + LibSharedMedia-3.0. The new `Details_TWW/lib/` has
-  no LibSharedMedia yet; add it there (and to `embeds.xml`) when the textures are registered again.
+- `legacy/Libs/` is the old embedded Ace3 + LibSharedMedia-3.0. `Details_TWW/lib/` has its own
+  LibSharedMedia-3.0 (Details!' current copy).
 
 Everything in it that touched Details internals (`instance.ativa`, `instance.meu_id`,
 `Details.gump.CreateNewLine`, `line.extraStatusbar`, the skin table keys) has to be checked against

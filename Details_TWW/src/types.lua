@@ -13,6 +13,7 @@
 ---@field options Details_TWW.Options  # the AceConfig options, in the Settings panel and a standalone window
 ---@field minimapButton Details_TWW.MinimapButton
 ---@field blizzardDamageMeter Details_TWW.BlizzardDamageMeter  # the skin for Blizzard's built-in damage meter
+---@field detailsSkin Details_TWW.DetailsSkin  # the skin for Details!, installed into its skin list
 
 -- The AceDB object, with profile/char/global narrowed to the shape of app.dbDefaults.
 -- Ace3 API types (AceAddon, AceDBObject-3.0, ...) come from the ketho.wow-api extension.
