@@ -1,6 +1,6 @@
 ## Interface: 120105, 50504, 20506, 11509, 16001
 ## Title: Details! Skin TWW
-## Notes: Adds the 'The War Within' Skin to Details!. |n|cffbbbbbbBy Karl-Heinz Schneider|r|n|n|TInterface/Addons/Details_TWW/assets/core/coffee:12:12|t |cff82c5ffbuymeacoffee.com/karlheinzschneider|r
+## Notes: Adds the 'The War Within' Skin to Blizzard's built-in damage meter and to Details!. |n|cffbbbbbbBy Karl-Heinz Schneider|r|n|n|TInterface/Addons/Details_TWW/assets/core/coffee:12:12|t |cff82c5ffbuymeacoffee.com/karlheinzschneider|r
 ## IconTexture: Interface\Icons\INV_Misc_QuestionMark
 ## Author: Karl-HeinzSchneider
 ## Version: |cff8080ff@project-version@|r
