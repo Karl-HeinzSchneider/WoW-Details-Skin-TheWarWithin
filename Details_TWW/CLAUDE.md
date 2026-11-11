@@ -51,14 +51,18 @@ be listed**. The order follows these rules:
 ### `src/details/`
 
 - `skin.lua` — `app.detailsSkin`: the Details! skin. `OnInitialize` registers our LibSharedMedia
-  statusbar media (and the legacy names), installs the skin with `Details:InstallSkin` and hooks
+  statusbar media (and the legacy names), installs the cached "The War Within" skin and an identical
+  "The War Within (no cache)" variant with `Details:InstallSkin` and hooks
   `Details.RefreshTitleBar` to 3-slice our header, `Details.ChangeSkin` to hide the window texture's
   own header band, and `Details.InstanceRefreshRows`/
   `Details.gump.CreateNewLine` to anchor our row background to the bar instead of the whole row, and
   `Details.SetClassIcon` to draw our class icon where Details! can't map Blizzard's spec icon id
   (every player on WoW Forever). It never changes a window on its own;
-  `ApplyToAllWindows()` (the options button) switches every open window. `IsAvailable()` is false
+  Both variants use the same hooks. `ApplyToAllWindows()` (the options button) switches every open
+  window to the cached variant. `IsAvailable()` is false
   without Details!. See the root `CLAUDE.md` for the API notes.
+  After registering media and hooks, existing windows using our header refresh their title bar:
+  cached windows can have loaded a fallback texture before our media names were available.
 
 ### Annotations (not in the TOC)
 

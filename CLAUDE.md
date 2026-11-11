@@ -87,17 +87,20 @@ icon file id).
 Checked against Details! `#Details.20261015` (one package for every client). The API:
 
 - `Details:InstallSkin(name, skin)` adds a skin to the skin list of Details!' options; it changes no
-  window. `no_cache = true` lets it run any time and keeps Details! from storing a copy of the table
-  in its saved variables (which would go stale and point at our files after we're gone). Windows
-  whose skin is not installed yet wait for it and switch when it arrives.
+  window unless it is waiting for that skin. Our default skin enables Details!' supported cache,
+  so the definition is available during the next profile restoration. The identical
+  "The War Within (no cache)" variant sets `no_cache = true` and retains the previous behavior.
+  Both definitions are built separately and registered afresh each session.
 - `instance:ChangeSkin(name)` applies it: after a config reset, `skin.instance_cprops` is copied over
   the window's settings **two levels deep** (a table under `row_info` replaces the window's whole
   table, so give every key; `row_info.texts` is the exception, Details! fills it from its defaults).
   A window already on the skin only refreshes, so `ApplyToAllWindows` clears `instance.skin` first.
 - The skin's `callback` is no longer called; what settings can't do is a `hooksecurefunc` on a
   `Details` method (instances inherit from `Details` by metatable, so the hook reaches all windows).
-- Details! starts its windows one frame after `PLAYER_LOGIN`, so installing in `OnInitialize` is early
-  enough (`OptionalDeps: Details` loads it before us).
+- Details! restores profiles during its own `ADDON_LOADED`, before our `OnInitialize`
+  (`OptionalDeps: Details` loads it before us). Without a cached definition, `WaitForSkin` falls back
+  to the default skin and `ChangeSkin` resets window settings, including fonts and `hide_on_context`
+  automation. Caching preserves settings on subsequent loads; it cannot recover settings already reset.
 - Every texture a window uses (`row_info.texture`, `texture_background`, `overlay_texture`,
   `titlebar_texture`) is looked up through **LibSharedMedia by name**.
 

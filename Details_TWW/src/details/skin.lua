@@ -27,12 +27,17 @@ local addon = app.addon
 --   Details.SetClassIcon                      our class icon where Details! can't map Blizzard's
 --                                             spec icon (WoW Forever)
 --
--- Details! starts its windows one frame after PLAYER_LOGIN, after every addon loaded, so registering
--- and installing in OnInitialize is early enough. no_cache: Details! would otherwise keep its own copy
--- of the table in its saved variables, which goes stale and points at our textures after we're gone.
+-- Details! restores profiles during its own ADDON_LOADED, before our OnInitialize. The default skin
+-- is cached so it is available then without resetting saved window settings. The optional no-cache
+-- variant retains the previous behavior. Both use fresh definitions whenever this addon loads.
 
 -- The legacy skin's name: windows and profiles saved with it find this skin under the same name.
 local SKIN_NAME = "|cff8080ffThe War Within|r"
+local NO_CACHE_SKIN_NAME = "|cff8080ffThe War Within (no cache)|r"
+
+local function isOurSkin(name)
+    return name == SKIN_NAME or name == NO_CACHE_SKIN_NAME
+end
 
 local TEXTURE_PATH = "Interface\\AddOns\\Details_TWW\\assets\\skin\\"
 
@@ -82,14 +87,19 @@ end
 
 -- The skin table for Details:InstallSkin. Window frame art and anchors follow Details!' own
 -- "Minimalistic v2" (no side bars, no status bar); instance_cprops are the window settings it applies.
-local function buildSkin()
+local function buildSkin(noCache)
     return {
         file = [[Interface\AddOns\Details\images\skins\classic_skin.blp]],
         author = "Karl-Heinz Schneider",
         version = "2.0",
         site = "https://www.curseforge.com/wow/addons/details-skin-the-war-within",
-        desc = "The War Within: cast bar style bars, round class and spec icons and the TWW title bar.",
-        no_cache = true,
+        desc = "The War Within: cast bar style bars, round class and spec icons and the TWW title bar.\n\n"
+            .. (
+                noCache
+                    and "Does not cache the skin definition in Details!. Choose this only if you specifically want to avoid caching. Custom settings, including font sizes and automation rules, may reset after login or reload."
+                or "Recommended for most users. Caches the skin definition in Details! so your custom settings can be preserved after login or reload. The cached definition remains if this addon is disabled or removed, but its textures still require the addon."
+            ),
+        no_cache = noCache,
 
         micro_frames = { color = { 1, 1, 1, 0.7 }, font = "Friz Quadrata TT", size = 9, textymod = 0 },
 
@@ -243,7 +253,7 @@ local function updateHeaderBand(instance)
     if not header then
         return
     end
-    local ours = instance.skin == SKIN_NAME
+    local ours = isOurSkin(instance.skin)
     for _, key in ipairs(HEADER_BAND_REGIONS) do
         local region = header[key]
         if region then
@@ -268,6 +278,13 @@ local function updateExistingWindows()
     end
     for _, instance in details:ListInstances() do
         updateHeaderBand(instance)
+        -- Cached windows were restored before our media names and title-bar hook existed.
+        -- Fetch the header again now; refreshing it preserves the window's saved settings.
+        local titleBar = instance.baseframe and instance.baseframe.titleBar
+        local ours = instance.titlebar_texture == MEDIA.header or instance.titlebar_texture == "TheWarWithinHeader"
+        if ours and titleBar and details.RefreshTitleBar then
+            details.RefreshTitleBar(instance)
+        end
     end
 end
 
@@ -349,7 +366,7 @@ end
 
 -- Called as actor:SetClassIcon(texture, instance, class) and Details.SetClassIcon(actor, ...).
 local function onSetClassIcon(actor, texture, instance, class)
-    if not instance or instance.skin ~= SKIN_NAME or not texture or type(actor) ~= "table" then
+    if not instance or not isOurSkin(instance.skin) or not texture or type(actor) ~= "table" then
         return
     end
     local rowInfo = instance.row_info
@@ -388,8 +405,12 @@ function module:Install()
     end
 
     registerMedia(media)
-    if not details:InstallSkin(SKIN_NAME, buildSkin()) then
+    if not details:InstallSkin(SKIN_NAME, buildSkin(false)) then
         log:warn("Details! refused the skin")
+        return
+    end
+    if not details:InstallSkin(NO_CACHE_SKIN_NAME, buildSkin(true)) then
+        log:warn("Details! refused the no-cache skin")
         return
     end
     self.installed = true
