@@ -8,9 +8,9 @@ local addon = app.addon
 --
 -- There is no API for this: the meter's styles are a fixed Edit Mode enum (Enum.DamageMeterStyle),
 -- so no new style can be registered. Instead we hook, never replace, the functions that apply a style
--- or an icon and swap in our art right after Blizzard's code ran. Only art is touched; anchors, bar
--- colors and the values (secret values in 12.x) stay Blizzard's. Turning the skin off puts Blizzard's
--- art back.
+-- or an icon and swap in our art right after Blizzard's code ran. The pinned player row is aligned
+-- to a visible list slot; bar colors and values (secret values in 12.x) stay Blizzard's. Turning
+-- the skin off puts Blizzard's art and pinned-row placement back.
 --
 -- Hooked functions (Blizzard_DamageMeter):
 --   DamageMeterEntryMixin.UpdateStyle      every bar, on setup and on every style/icon change; also
@@ -103,6 +103,7 @@ local headers = setmetatable({}, { __mode = "k" }) -- session window -> our head
 local skinnedIcons = setmetatable({}, { __mode = "k" }) -- entry -> shows our class icon
 ---@type table<FontString, Font>
 local originalFont = setmetatable({}, { __mode = "k" }) -- font string -> Blizzard's font object
+local coveredEntries = setmetatable({}, { __mode = "k" }) -- window -> covered row and its alpha
 
 local function isEnabled()
     return app.db.profile.blizzardDamageMeter.enabled
@@ -389,6 +390,60 @@ local function hookFrame(frame, method, mixin, handler)
     end
 end
 
+local function restoreCoveredEntry(window)
+    local covered = coveredEntries[window]
+    if covered then
+        covered.frame:SetAlpha(covered.alpha)
+        coveredEntries[window] = nil
+    end
+end
+
+-- Blizzard pins 4px outside the viewport, which need not end on a whole row. Snap to the
+-- first/last fully visible list slot instead. Only layout numbers are read, never combat data.
+local function alignLocalPlayerEntry(window, earlierInList)
+    restoreCoveredEntry(window)
+    if not isEnabled() then
+        return
+    end
+
+    local scrollBox = window:GetScrollBox()
+    local entry = window:GetLocalPlayerEntry()
+    local height = window:GetBarHeight()
+    local spacing = window:GetBarSpacing()
+    local stride = height + spacing
+    local extent = scrollBox:GetVisibleExtent()
+    if stride <= 0 or extent < height then
+        return
+    end
+
+    local offset = scrollBox:GetDerivedScrollOffset()
+    local slot
+    if earlierInList then
+        slot = math.ceil(offset / stride)
+    else
+        slot = math.floor((offset + extent - height) / stride)
+    end
+    local y = offset - slot * stride
+    entry:ClearAllPoints()
+    entry:SetPoint("TOPLEFT", scrollBox, "TOPLEFT", 0, y)
+    entry:SetPoint("TOPRIGHT", scrollBox, "TOPRIGHT", 0, y)
+
+    -- Our art is transparent above the fill and around the icon. Hide the covered row as a
+    -- whole so its name, value and icon cannot bleed through the pinned player's row.
+    window:ForEachEntryFrame(function(frame)
+        if frame:GetOrderIndex() == slot + 1 then
+            coveredEntries[window] = { frame = frame, alpha = frame:GetAlpha() }
+            frame:SetAlpha(0)
+        end
+    end)
+end
+
+local function hookSessionWindow(window)
+    local mixin = DamageMeterSessionWindowMixin
+    hookFrame(window, "ShowLocalPlayerEntry", mixin, alignLocalPlayerEntry)
+    hookFrame(window, "HideLocalPlayerEntry", mixin, restoreCoveredEntry)
+end
+
 function module:InstallHooks()
     if self.hooked then
         return
@@ -399,6 +454,9 @@ function module:InstallHooks()
         return
     end
     self.hooked = true
+
+    hooksecurefunc(DamageMeterSessionWindowMixin, "ShowLocalPlayerEntry", alignLocalPlayerEntry)
+    hooksecurefunc(DamageMeterSessionWindowMixin, "HideLocalPlayerEntry", restoreCoveredEntry)
 
     hooksecurefunc(entryMixin, "UpdateStyle", onUpdateStyle)
     hooksecurefunc(entryMixin, "UpdateIcon", skinIcon)
@@ -412,6 +470,7 @@ function module:InstallHooks()
     end)
 
     forEachSessionWindow(function(window)
+        hookSessionWindow(window)
         forEachEntryOfWindow(window, function(entry)
             hookFrame(entry, "UpdateStyle", entryMixin, onUpdateStyle)
             hookFrame(entry, "UpdateIcon", entryMixin, skinIcon)
@@ -430,6 +489,7 @@ function module:Apply()
     forEachSessionWindow(function(window)
         skinSessionWindow(window)
         forEachEntryOfWindow(window, skinEntryFully)
+        window:EnsureLocalPlayerPresent()
     end)
 end
 
